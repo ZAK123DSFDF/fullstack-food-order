@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+enum Role{
+  ADMIN
+  CUSTOMER
+  SERVANT
+}
+model User {
+  id            Int         @id @default(autoincrement())
+  name          String
+  email         String      @unique
+  password      String
+  location      String
+  phoneNumber   String
+  role          Role        @default(CUSTOMER)
+  active        Boolean     @default(false)
+  restaurant Restaurant?
+  servantRoleId Int?
+  servantRole servantRole?  @relation(fields: [servantRoleId],references: [id])
+}
+
+model Restaurant {
+  id            Int           @id @default(autoincrement())
+  name          String
+  admin         User?          @relation(fields: [adminId], references: [id])
+  adminId       Int?           @unique
+}
+enum allowedActions{
+  SEE_ORDERS
+  UPDATE_ORDERS
+  SEE_CUSTOMER_INFO
+  ADD_MENU
+  ADD_ROLE
+  UPDATE_ROLE
+  DELETE_ROLE
+  ADD_USER
+  UPDATE_USER
+  DELETE_USER
+}
+model servantRole{
+  id          Int     @id @default(autoincrement())
+  name        String
+  allowedActions  allowedActions[]
+  user User[]
+}
