@@ -19,16 +19,17 @@ model User {
   phoneNumber   String
   role          Role        @default(CUSTOMER)
   active        Boolean     @default(false)
-  restaurant Restaurant?
+  restaurant    Restaurant?
   servantRoleId Int?
-  servantRole servantRole?  @relation(fields: [servantRoleId],references: [id])
+  servantRole   servantRole?  @relation(fields: [servantRoleId],references: [id])
+  orderMenu     menu[]
 }
-
 model Restaurant {
   id            Int           @id @default(autoincrement())
   name          String
-  admin         User?          @relation(fields: [adminId], references: [id])
+  admin         User?          @relation(fields: [adminId], references: [id],onDelete: Cascade)
   adminId       Int?           @unique
+  menu          menu[]
 }
 enum allowedActions{
   SEE_ORDERS
@@ -47,4 +48,24 @@ model servantRole{
   name        String
   allowedActions  allowedActions[]
   user User[]
+  active  Boolean  @default(false)
 }
+enum menuStatus{
+  CREATED
+  PREPARING
+  READY
+  DELIVERED
+}
+model menu{
+  id       Int   @id @default(autoincrement())
+  name     String
+  count    Int    @default(1)
+  price    Int
+  restaurantId  Int
+  restaurant    Restaurant?  @relation(fields: [restaurantId],references: [id])
+  menuStatus    menuStatus   @default(CREATED)
+  orderCustomerId   Int?
+  orderCustomer     User?     @relation(fields: [orderCustomerId],references: [id])   
+  toppings      String[]
+}
+
