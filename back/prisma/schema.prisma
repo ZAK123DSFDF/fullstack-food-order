@@ -10,27 +10,6 @@ enum Role{
   CUSTOMER
   SERVANT
 }
-model User {
-  id            Int         @id @default(autoincrement())
-  name          String
-  email         String      @unique
-  password      String
-  location      String
-  phoneNumber   String
-  role          Role        @default(CUSTOMER)
-  active        Boolean     @default(false)
-  restaurant    Restaurant?
-  servantRoleId Int?
-  servantRole   servantRole?  @relation(fields: [servantRoleId],references: [id])
-  orderMenu     menu[]
-}
-model Restaurant {
-  id            Int           @id @default(autoincrement())
-  name          String
-  admin         User?          @relation(fields: [adminId], references: [id],onDelete: Cascade)
-  adminId       Int?           @unique
-  menu          menu[]
-}
 enum allowedActions{
   SEE_ORDERS
   UPDATE_ORDERS
@@ -39,33 +18,66 @@ enum allowedActions{
   ADD_ROLE
   UPDATE_ROLE
   DELETE_ROLE
+  GET_ROLES
   ADD_USER
   UPDATE_USER
   DELETE_USER
+  GET_USERS
 }
-model servantRole{
-  id          Int     @id @default(autoincrement())
-  name        String
-  allowedActions  allowedActions[]
-  user User[]
-  active  Boolean  @default(false)
-}
-enum menuStatus{
-  CREATED
+enum orderStatus{
   PREPARING
   READY
   DELIVERED
 }
-model menu{
-  id       Int   @id @default(autoincrement())
-  name     String
-  count    Int    @default(1)
-  price    Int
-  restaurantId  Int
-  restaurant    Restaurant?  @relation(fields: [restaurantId],references: [id])
-  menuStatus    menuStatus   @default(CREATED)
-  orderCustomerId   Int?
-  orderCustomer     User?     @relation(fields: [orderCustomerId],references: [id])   
-  toppings      String[]
+model User {
+  id            Int         @id @default(autoincrement())
+  name          String
+  email         String      @unique
+  password      String
+  phoneNumber   String
+  location      String
+  role          Role        @default(CUSTOMER)
+  active        Boolean     @default(false)
+  restaurantId   Int
+  restaurant    Restaurant?   @relation(fields: [restaurantId],references: [id])
+  servantRoleId Int?
+  servantRole   servantRole?  @relation(fields: [servantRoleId],references: [id])
+  order         order[]
 }
+model Restaurant {
+  id            Int           @id @default(autoincrement())
+  name          String
+  users         User[]
+  menu          menu[]
+  servantRole   servantRole[]
+  location      String
+}
+model servantRole{
+  id                 Int            @id @default(autoincrement())
+  name               String
+  allowedActions     allowedActions[]
+  user               User[]
+  restaurantId       Int
+  restaurant         Restaurant?    @relation(fields: [restaurantId],references: [id])
+  active             Boolean        @default(false)
+}
+model menu{
+  id                Int   @id @default(autoincrement())
+  name              String
+  price             Int
+  restaurantId      Int
+  restaurant        Restaurant?  @relation(fields: [restaurantId],references: [id]) 
+  toppings          String[]
+  order             order[]
+}
+model order{
+   id                Int   @id @default(autoincrement())
+   orderStatus       orderStatus  @default(PREPARING)
+   count             Int    @default(1)
+   customerId        Int
+   customer          User   @relation(fields: [customerId],references: [id])
+   menuId            Int
+   menu              menu   @relation(fields: [menuId],references: [id])
+   toppings          String[]
+  }
 

@@ -17,11 +17,12 @@ export class AuthService {
   async createUser(userData: any): Promise<any> {
     try {
       const SignupSchema = z.object({
-        name: z.string().min(1, 'Name is required'),
+        name: z.string().min(1, 'Name is required').optional(),
         email: z.string().email('Invalid email address'),
         password: z.string().min(6, 'Password must be at least 6 characters'),
         location: z.string(),
         phoneNumber: z.string(),
+        servantRole: z.array(z.string()).optional(),
       });
       const parsed = SignupSchema.safeParse(userData);
       if (!parsed.success) {
@@ -43,7 +44,11 @@ export class AuthService {
         },
       });
       const token = this.jwt.sign(
-        { user: user.id, email: user.email, role: user.role },
+        {
+          user: user.id,
+          email: user.email,
+          role: user.role,
+        },
         { secret: process.env.secret },
       );
       return { user, token };
@@ -63,12 +68,10 @@ export class AuthService {
         servantRoleId: z.number().optional(),
         restaurantId: z.number().optional(),
       });
-
       const parsed = SignupSchema.safeParse(userData);
       if (!parsed.success) {
         throw new BadRequestException(parsed.error.errors);
       }
-
       const {
         name,
         email,
@@ -78,12 +81,10 @@ export class AuthService {
         servantRoleId,
         restaurantId,
       } = parsed.data;
-
       const existUser = await this.prisma.user.findUnique({ where: { email } });
       if (existUser) {
         throw new ConflictException('Email already exists');
       }
-
       if (servantRoleId) {
         const existingServantRole = await this.prisma.servantRole.findUnique({
           where: { id: servantRoleId },
@@ -91,8 +92,10 @@ export class AuthService {
         if (!existingServantRole) {
           throw new BadRequestException('Invalid servant role ID.');
         }
+        if (!existingServantRole.active) {
+          throw new BadRequestException('Servant role is not active.');
+        }
       }
-
       if (restaurantId) {
         const existingRestaurant = await this.prisma.restaurant.findUnique({
           where: { id: restaurantId },
@@ -101,7 +104,6 @@ export class AuthService {
           throw new BadRequestException('Invalid restaurant ID.');
         }
       }
-
       const hashedPassword = await bcrypt.hash(password, 10);
       const user = await this.prisma.user.create({
         data: {
@@ -111,12 +113,13 @@ export class AuthService {
           location,
           phoneNumber,
           role: 'SERVANT',
-          servantRoleId,
+          servantRole: {
+            connect: { id: servantRoleId },
+          },
           restaurant: {
             connect: { id: restaurantId },
           },
         },
-        include: { servantRole: true },
       });
 
       const token = this.jwt.sign(
@@ -124,18 +127,17 @@ export class AuthService {
           user: user.id,
           email: user.email,
           role: user.role,
-          servantRole: user.servantRole?.allowedActions || [], // Safely access allowedActions
+          restaurantId,
+          servantRoleId,
         },
         { secret: process.env.secret },
       );
-
       return { user, token };
     } catch (error) {
       console.log(error);
       throw error;
     }
   }
-
   async activateServant(userId: number): Promise<any> {
     try {
       const user = await this.prisma.user.findUnique({
@@ -144,16 +146,13 @@ export class AuthService {
       if (!user) {
         throw new NotFoundException('User not found');
       }
-
       if (user.role !== 'SERVANT') {
         throw new BadRequestException('Only servant users can be activated');
       }
-
       const updatedUser = await this.prisma.user.update({
         where: { id: userId },
         data: { active: true },
       });
-
       return {
         message: 'User has been activated',
         user: updatedUser,
@@ -207,6 +206,51 @@ export class AuthService {
       return {
         message: 'Servant user has been deleted successfully',
       };
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+  async getAllServants(restaurantId: number): Promise<any[]> {
+    try {
+      const restaurant = await this.prisma.restaurant.findUnique({
+        where: { id: restaurantId },
+      });
+
+      if (!restaurant) {
+        throw new NotFoundException('Restaurant not found');
+      }
+      const servants = await this.prisma.user.findMany({
+        where: {
+          role: 'SERVANT',
+          restaurantId,
+        },
+      });
+      return servants;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+  async validateUser(userData: any): Promise<any> {
+    try {
+      const { email, password } = userData;
+      if (!email || !password) {
+        throw new NotFoundException('user not found');
+      }
+      const user = await this.prisma.user.findUnique({ where: { email } });
+      if (!user) {
+        throw new NotFoundException('user not found');
+      }
+      const validPassword = await bcrypt.compare(password, user.password);
+      if (!validPassword) {
+        throw new BadRequestException('credentials not correct');
+      }
+      const token = this.jwt.sign(
+        { user: user.id, email: user.email, role: user.role },
+        { secret: process.env.secret },
+      );
+      return { user, token };
     } catch (error) {
       console.log(error);
       throw error;

@@ -9,7 +9,10 @@ import { z } from 'zod';
 @Injectable()
 export class RoleService {
   constructor(private prisma: PrismaService) {}
-  async createServantRole(servantRoleData: any): Promise<any> {
+  async createServantRole(
+    servantRoleData: any,
+    restaurantId: any,
+  ): Promise<any> {
     const ServantRoleSchema = z.object({
       name: z.string().min(1, 'Role name is required'),
       allowedActions: z
@@ -37,6 +40,7 @@ export class RoleService {
     try {
       const newServantRole = await this.prisma.servantRole.create({
         data: {
+          restaurantId,
           name,
           allowedActions,
           active: true,
@@ -148,5 +152,18 @@ export class RoleService {
       console.error(error);
       throw error;
     }
+  }
+  async getAllRoles(restaurantId: number): Promise<any> {
+    const restaurant = await this.prisma.restaurant.findUnique({
+      where: { id: restaurantId },
+    });
+    if (!restaurant) {
+      throw new NotFoundException('Restaurant not found');
+    }
+    const roles = await this.prisma.servantRole.findMany({
+      where: { restaurantId },
+    });
+
+    return roles;
   }
 }
