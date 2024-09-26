@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   Patch,
   Post,
@@ -51,6 +52,38 @@ export class OrderController {
       return result;
     } catch (error) {
       console.log(error);
+      throw error;
+    }
+  }
+  @Get('history/:customerId')
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AllowedActions.ORDER_HISTORY, Orders),
+  )
+  async getOrderHistory(@Param('customerId') customerId: number) {
+    try {
+      const orderHistory = await this.orderService.getOrderHistoryByCustomerId(
+        Number(customerId),
+      );
+      return orderHistory;
+    } catch (error) {
+      throw error;
+    }
+  }
+  @Get('restaurant/:restaurantId')
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies(
+    (ability: AppAbility) =>
+      ability.can(AllowedActions.ALL, All) ||
+      ability.can(AllowedActions.SEE_ORDERS, Orders),
+  )
+  async getOrdersByRestaurant(@Param('restaurantId') restaurantId: number) {
+    try {
+      const orders = await this.orderService.getOrdersByRestaurantId(
+        Number(restaurantId),
+      );
+      return orders;
+    } catch (error) {
       throw error;
     }
   }

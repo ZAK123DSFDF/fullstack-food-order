@@ -88,4 +88,54 @@ export class OrderService {
       throw error;
     }
   }
+  async getOrderHistoryByCustomerId(customerId: number): Promise<any> {
+    const customerExists = await this.prisma.user.findUnique({
+      where: { id: customerId },
+    });
+    if (!customerExists) {
+      throw new NotFoundException(`Customer with ID ${customerId} not found.`);
+    }
+    const orders = await this.prisma.order.findMany({
+      where: { customerId },
+      include: {
+        menu: true,
+      },
+    });
+    if (!orders || orders.length === 0) {
+      throw new NotFoundException(
+        `No orders found for customer with ID ${customerId}.`,
+      );
+    }
+    return orders;
+  }
+  async getOrdersByRestaurantId(restaurantId: number): Promise<any> {
+    const restaurantExists = await this.prisma.restaurant.findUnique({
+      where: { id: restaurantId },
+    });
+
+    if (!restaurantExists) {
+      throw new NotFoundException(
+        `Restaurant with ID ${restaurantId} not found.`,
+      );
+    }
+    const orders = await this.prisma.order.findMany({
+      where: {
+        menu: {
+          restaurantId: restaurantId,
+        },
+      },
+      include: {
+        menu: true,
+        customer: true,
+      },
+    });
+
+    if (orders.length === 0) {
+      throw new NotFoundException(
+        `No orders found for restaurant with ID ${restaurantId}.`,
+      );
+    }
+
+    return orders;
+  }
 }

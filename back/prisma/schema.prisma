@@ -13,7 +13,6 @@ enum Role{
 enum allowedActions{
   SEE_ORDERS
   UPDATE_ORDERS
-  SEE_CUSTOMER_INFO
   ADD_MENU
   ADD_ROLE
   UPDATE_ROLE
