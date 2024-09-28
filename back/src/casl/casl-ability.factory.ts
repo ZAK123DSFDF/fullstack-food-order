@@ -89,18 +89,7 @@ export class CaslAbilityFactory {
               }
 
               break;
-            case 'SEE_CUSTOMER_INFO':
-              if (userCheck.active) {
-                can(AllowedActions.SEE_CUSTOMER_INFO, Customers, {
-                  restaurantId: user.restaurantId,
-                });
-              } else {
-                cannot(AllowedActions.SEE_CUSTOMER_INFO, Customers, {
-                  restaurantId: user.restaurantId,
-                });
-              }
 
-              break;
             case 'ADD_MENU':
               if (userCheck.active) {
                 can(AllowedActions.ADD_MENU, Menu, {
