@@ -1,8 +1,26 @@
 "use client";
 import { Box, Button, TextField, Typography } from "@mui/material";
+import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
+import { useState } from "react";
+import { getLogin } from "../actions/user/getLogin";
 
 export default function Signup() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { mutate, isPending } = useMutation({
+    mutationFn: getLogin,
+    onSuccess: (data) => {
+      console.log(data);
+    },
+  });
+  const loginHandle = (e: any) => {
+    e.preventDefault();
+    console.log(email, password);
+    mutate({ email, password });
+    setEmail("");
+    setPassword("");
+  };
   return (
     <Box
       sx={{
@@ -94,12 +112,16 @@ export default function Signup() {
             <TextField
               label="Email"
               variant="outlined"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               type="email"
               fullWidth
             />
             <TextField
               label="Password"
               variant="outlined"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               type="password"
               fullWidth
             />
@@ -111,6 +133,7 @@ export default function Signup() {
                 minWidth: { xs: "280px", sm: "400px" },
               }}
               fullWidth
+              onClick={loginHandle}
             >
               submit
             </Button>

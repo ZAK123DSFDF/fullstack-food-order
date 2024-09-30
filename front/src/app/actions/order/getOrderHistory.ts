@@ -1,22 +1,21 @@
 "use server";
 import { cookies } from "next/headers";
-export const createOrder = async (orderData: any) => {
+export const getOrderHistory = async () => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/order/create`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/order/history`,
     {
-      method: "POST",
+      method: "GET",
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         Cookie: cookies().toString(),
       },
-      body: JSON.stringify(orderData),
     }
   );
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.message || "failed to create order");
+    throw new Error(errorData.message || "failed to get history");
   }
-  const createdOrder = await response.json();
-  return createdOrder;
+  const updatedOrder = await response.json();
+  return updatedOrder;
 };

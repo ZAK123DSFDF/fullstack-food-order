@@ -10,43 +10,66 @@ import {
 } from "@mui/material";
 import { Minus, Plus } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "./Card";
+import { useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { getSingleMenu } from "../actions/menu/getSingleMenu";
 
 export default function MenuDetail() {
-  const images = [
-    "/city1.jpg",
-    "/man1.jpg",
-    "/man2.jpg",
-    "/man3.jpg",
-    "/man4.jpg",
-  ];
-  const largeImageArray = Array.from(
-    { length: 30 },
-    (_, i) => images[i % images.length]
-  );
-  const [selectedImage, setSelectedImage] = useState(images[0]);
-  const [checked, setChecked] = useState([true, true, true, true, false]);
+  const params = useParams();
+  const [count, setCount] = useState(1);
+  // Fetching the menu details
+  const { data } = useQuery({
+    queryKey: ["singleMenu"],
+    queryFn: () => getSingleMenu(params.id),
+  });
+
+  const [selectedImage, setSelectedImage] = useState("");
+  const [checkedToppings, setCheckedToppings] = useState<boolean[]>([]);
+
+  // Set default selected image and initialize toppings checkboxes
+  useEffect(() => {
+    if (data) {
+      setSelectedImage(data.Picture[0]); // Set first image by default
+      // Initialize the checkedToppings array based on the toppings array from the server
+      const initialChecked = data.toppings?.map(() => false) || [];
+      setCheckedToppings(initialChecked);
+    }
+  }, [data]);
+  useEffect(() => {
+    console.log(checkedToppings);
+    const selectedToppings = data?.toppings?.filter(
+      (_, index) => checkedToppings[index]
+    );
+    console.log(selectedToppings);
+  }, [checkedToppings, data]);
+  const handleImageSelect = (img: string) => {
+    setSelectedImage(img);
+  };
+
+  // Handle checkbox change for toppings
+  const handleToppingChange = (index: number) => {
+    const updatedCheckedToppings = [...checkedToppings];
+    updatedCheckedToppings[index] = !updatedCheckedToppings[index];
+    setCheckedToppings(updatedCheckedToppings);
+  };
+
+  // Track the selected toppings for order
+  const handleOrder = () => {
+    const selectedToppings = data.toppings?.filter(
+      (_, index) => checkedToppings[index]
+    );
+    console.log("Selected toppings:", selectedToppings);
+    // You can send the selectedToppings to the server here
+  };
 
   // Modal state
   const [open, setOpen] = useState(false);
 
-  // Handle checkbox change
-  const handleChange = (index: any) => {
-    const updatedChecked = [...checked];
-    updatedChecked[index] = !updatedChecked[index];
-    setChecked(updatedChecked);
-  };
-
-  // Handle modal open
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  // Handle modal close
-  const handleClose = () => {
-    setOpen(false);
-  };
+  // Handle modal open/close
+  const handleClickOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   return (
     <Box
@@ -107,7 +130,7 @@ export default function MenuDetail() {
             maxWidth: { xs: "100%", md: "200px" },
           }}
         >
-          {largeImageArray.map((img, index) => (
+          {data?.Picture.map((img, index) => (
             <Box
               key={index}
               sx={{
@@ -120,7 +143,7 @@ export default function MenuDetail() {
                 overflow: "hidden",
                 transition: "border 0.3s ease",
               }}
-              onClick={() => setSelectedImage(img)}
+              onClick={() => handleImageSelect(img)}
             >
               <Image
                 src={img}
@@ -132,8 +155,12 @@ export default function MenuDetail() {
             </Box>
           ))}
         </Box>
+
+        {/* Toppings & Order Actions */}
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <Typography>Margherita</Typography>
+          <Typography>{data?.name}</Typography>
+
+          {/* Toppings Selection */}
           <Box
             sx={{
               display: "flex",
@@ -142,22 +169,22 @@ export default function MenuDetail() {
               width: "100%",
             }}
           >
-            {checked.map((isChecked, index) => (
+            {data?.toppings?.map((topping, index) => (
               <FormControlLabel
                 key={index}
                 control={
                   <Checkbox
-                    checked={isChecked}
-                    onChange={() => handleChange(index)}
-                    sx={{
-                      color: isChecked ? "blue" : "default",
-                    }}
+                    checked={checkedToppings[index] || false}
+                    onChange={() => handleToppingChange(index)}
+                    sx={{ color: checkedToppings[index] ? "blue" : "default" }}
                   />
                 }
-                label={`Checkbox ${index + 1}`}
+                label={topping}
               />
             ))}
           </Box>
+
+          {/* Quantity and Price */}
           <Box sx={{ display: "flex", gap: 2 }}>
             <Box
               sx={{
@@ -169,10 +196,11 @@ export default function MenuDetail() {
                 justifyContent: "center",
                 alignItems: "center",
               }}
+              onClick={() => count > 1 && setCount((prev) => prev - 1)}
             >
               <Minus />
             </Box>
-            <Typography>1</Typography>
+            <Typography>{count}</Typography>
             <Box
               sx={{
                 minWidth: 30,
@@ -183,11 +211,12 @@ export default function MenuDetail() {
                 justifyContent: "center",
                 alignItems: "center",
               }}
+              onClick={() => setCount((prev) => prev + 1)}
             >
               <Plus />
             </Box>
             <Typography>
-              150
+              {data?.price}
               <Typography
                 component="span"
                 sx={{
@@ -199,12 +228,14 @@ export default function MenuDetail() {
               </Typography>
             </Typography>
           </Box>
+
           <Button sx={{ alignSelf: "flex-start" }} onClick={handleClickOpen}>
             Order
           </Button>
         </Box>
       </Box>
 
+      {/* Related Section */}
       <Box
         sx={{
           display: "flex",

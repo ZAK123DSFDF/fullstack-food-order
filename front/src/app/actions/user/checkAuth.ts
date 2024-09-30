@@ -13,8 +13,7 @@ export const checkAuth = async () => {
     }
   );
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "failed to check");
+    return { isAuthenticated: false };
   }
   const authData = await response.json();
   return authData;

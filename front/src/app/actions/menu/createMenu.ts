@@ -1,6 +1,6 @@
 "use server";
 import { cookies } from "next/headers";
-export const getAllMenus = async (formData: any) => {
+export const createMenu = async (formData: any) => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/menu/create`,
     {

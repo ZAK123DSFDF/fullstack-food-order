@@ -1,22 +1,17 @@
 "use server";
+
 import { cookies } from "next/headers";
-export const createUser = async ({
-  name,
-  email,
-  password,
-  location,
-  phoneNumber,
-}: any) => {
+
+export const getLogin = async ({ email, password }: any) => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/auth/create`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`,
     {
       method: "POST",
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
-        Cookie: cookies().toString(),
       },
-      body: JSON.stringify({ name, email, password, location, phoneNumber }),
+      body: JSON.stringify({ email, password }),
     }
   );
   if (!response.ok) {

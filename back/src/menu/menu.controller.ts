@@ -72,10 +72,20 @@ export class MenuController {
     }
   }
   @Get('exclude/:id')
-  async getMenusExcluding(@Param('id') menuId: number, @Response() res) {
+  async getMenusExcluding(@Param('id') menuId: string, @Response() res) {
     try {
       const menus = await this.menuService.getMenusExcluding(Number(menuId));
       res.status(200).json(menus);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+  @Get('single/:id')
+  async getSingleMenu(@Param('id') id: string, @Response() res) {
+    try {
+      const menu = await this.menuService.getSingleMenu(Number(id));
+      res.status(200).json(menu);
     } catch (error) {
       console.log(error);
       throw error;

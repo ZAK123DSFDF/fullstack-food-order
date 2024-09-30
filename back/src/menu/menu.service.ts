@@ -80,4 +80,13 @@ export class MenuService {
       throw new InternalServerErrorException('Could not fetch menus');
     }
   }
+  async getSingleMenu(id: any) {
+    try {
+      const menu = this.prisma.menu.findUnique({ where: { id } });
+      return menu;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
 }

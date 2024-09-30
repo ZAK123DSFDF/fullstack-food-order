@@ -6,11 +6,14 @@ import { Facebook, Linkedin, Shield, Twitter, Youtube } from "lucide-react";
 import Scrollable from "./Scrollable";
 import Card from "./Card";
 
-export default function Home() {
-  const [fontSize, setFontSize] = useState("8rem"); // Default for larger screens
-  const [subTextSize, setSubTextSize] = useState("1.5rem"); // Default subtext size
-
-  // Function to handle resizing logic
+export default function Home({ data }: any) {
+  useEffect(() => {
+    if (data) {
+      console.log(data);
+    }
+  }, [data]);
+  const [fontSize, setFontSize] = useState("8rem");
+  const [subTextSize, setSubTextSize] = useState("1.5rem");
   const handleResize = () => {
     const screenWidth = window.innerWidth;
     if (screenWidth < 450) {
@@ -23,25 +26,19 @@ export default function Home() {
       setFontSize("6rem");
       setSubTextSize("1.2rem");
     } else if (screenWidth < 960) {
-      setFontSize("7rem"); // Adjust main text for screens smaller than 960px
-      setSubTextSize("1.25rem"); // Adjust subtext size accordingly
+      setFontSize("7rem");
+      setSubTextSize("1.25rem");
     } else if (screenWidth < 1200) {
       setFontSize("8rem");
       setSubTextSize("1.5rem");
     } else {
-      setFontSize("12rem"); // Default larger text for bigger screens
+      setFontSize("12rem");
       setSubTextSize("2rem");
     }
   };
-
-  // useEffect to handle resize events and update text sizes
   useEffect(() => {
     window.addEventListener("resize", handleResize);
-
-    // Initial check when the component mounts
     handleResize();
-
-    // Clean up the event listener on unmount
     return () => {
       window.removeEventListener("resize", handleResize);
     };
@@ -82,11 +79,11 @@ export default function Home() {
           >
             <Box
               sx={{
-                display: "inline-flex", // Change to inline-flex to make background fit content
+                display: "inline-flex",
                 flexDirection: "column",
                 alignItems: "flex-start",
-                width: "max-content", // Ensure the width fits to the content
-                height: "max-content", // Ensure the height fits to the content
+                width: "max-content",
+                height: "max-content",
                 marginTop: { xs: 3, sm: 5, md: 10 },
               }}
             >
@@ -96,9 +93,9 @@ export default function Home() {
                   fontSize: fontSize,
                   fontWeight: 800,
                   textAlign: "center",
-                  whiteSpace: "nowrap", // Prevent text wrapping
-                  overflow: "hidden", // Hide overflow if needed
-                  textOverflow: "ellipsis", // Optionally add ellipsis for overflow
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
                 }}
               >
                 Order Us
@@ -106,7 +103,7 @@ export default function Home() {
               <Typography
                 sx={{
                   fontSize: subTextSize,
-                  maxWidth: { xs: "250px", sm: "400px" }, // Change maxWidth based on screen size
+                  maxWidth: { xs: "250px", sm: "400px" },
                   marginTop: 2,
                 }}
               >
@@ -165,11 +162,11 @@ export default function Home() {
                 },
                 maxWidth: "800px",
                 lineHeight: {
-                  xs: "1.2", // Adjust line-height for extra small screens
-                  sm: "1.2", // Same for small screens
-                  md: "1.1", // Slightly tighter line height for medium screens
-                  lg: "1.1", // Consistent for larger screens
-                  xl: "1", // Tighter line-height for extra-large text
+                  xs: "1.2",
+                  sm: "1.2",
+                  md: "1.1",
+                  lg: "1.1",
+                  xl: "1",
                 },
               }}
             >
@@ -218,10 +215,10 @@ export default function Home() {
             gap: 2,
             width: "100%",
             flexWrap: "wrap",
-            justifyContent: "center",
+            justifyContent: { xs: "center", lg: "flex-start" },
           }}
         >
-          <Card />
+          <Card data={data} />
         </Box>
       </Box>
       <Box

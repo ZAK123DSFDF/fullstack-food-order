@@ -1,8 +1,45 @@
 "use client";
 import { Box, Button, TextField, Typography } from "@mui/material";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { createUser } from "../actions/user/createUser";
+import { useMutation } from "@tanstack/react-query";
 
 export default function Signup() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+  } = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      location: "",
+      phoneNumber: "",
+    },
+    mode: "onBlur",
+  });
+  const password = watch("password");
+  const confirmPassword = watch("confirmPassword");
+
+  const { mutate, isPending, isError, error } = useMutation({
+    mutationFn: createUser,
+    onSuccess: (data) => {
+      console.log(data);
+    },
+  });
+  const onSubmit = async (data: any) => {
+    try {
+      await mutate(data);
+      reset();
+    } catch (err) {
+      console.error("Signup failed:", err);
+    }
+  };
   return (
     <Box
       sx={{
@@ -43,6 +80,7 @@ export default function Signup() {
       >
         <Box
           component="form"
+          onSubmit={handleSubmit(onSubmit)}
           sx={{
             display: "flex",
             alignItems: "flex-start",
@@ -92,28 +130,70 @@ export default function Signup() {
             }}
           >
             <TextField
+              label="name"
+              variant="outlined"
+              type="text"
+              fullWidth
+              {...register("name", { required: "Name is required" })}
+              error={Boolean(errors.name)}
+              helperText={errors.name?.message}
+            />
+            <TextField
               label="Email"
               variant="outlined"
               type="email"
               fullWidth
+              {...register("email", { required: "Email is required" })}
+              error={Boolean(errors.email)}
+              helperText={errors.email?.message}
             />
             <TextField
               label="Password"
               variant="outlined"
               type="password"
               fullWidth
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters long",
+                },
+              })}
+              error={Boolean(errors.password)}
+              helperText={errors.password?.message}
             />
             <TextField
               label="Confirm Password"
               variant="outlined"
               type="password"
               fullWidth
+              {...register("confirmPassword", {
+                required: "Confirm Password is required",
+                validate: (value) =>
+                  value === password || "Passwords do not match",
+              })}
+              error={Boolean(errors.confirmPassword)}
+              helperText={errors.confirmPassword?.message}
             />
             <TextField
               label="Phone Number"
               variant="outlined"
               type="text"
               fullWidth
+              {...register("phoneNumber", {
+                required: "Phone number is required",
+              })}
+              error={Boolean(errors.phoneNumber)}
+              helperText={errors.phoneNumber?.message}
+            />
+            <TextField
+              label="location"
+              variant="outlined"
+              type="text"
+              fullWidth
+              {...register("location", { required: "Location is required" })}
+              error={Boolean(errors.location)}
+              helperText={errors.location?.message}
             />
             <Button
               variant="contained"
@@ -124,7 +204,7 @@ export default function Signup() {
               type="submit"
               fullWidth
             >
-              Submit
+              {isPending ? "submitting" : "submit"}
             </Button>
             <Typography sx={{ alignSelf: "center" }}>
               Have an account?{" "}
