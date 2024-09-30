@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -6,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Request,
   Response,
   UseGuards,
 } from '@nestjs/common';
@@ -16,11 +18,16 @@ import { CheckPolicies } from 'src/decorators/CheckPolicies';
 import { AppAbility } from 'src/casl/casl-ability.factory';
 import { All } from 'src/classes/All';
 import { Role } from 'src/classes/Role';
+import { AllowedActions } from 'src/utils/enum';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('role')
 export class RoleController {
-  constructor(private readonly roleService: RoleService) {}
-  @Post('create/:restaurantId')
+  constructor(
+    private readonly roleService: RoleService,
+    private jwt: JwtService,
+  ) {}
+  @Post('create')
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
@@ -29,14 +36,21 @@ export class RoleController {
   )
   async createServantRole(
     @Response() res,
-    @Param('restaurantId') restaurantId: any,
+    @Request() req,
     @Body() servantRoleData: any,
   ) {
     try {
-      const servantRole = this.roleService.createServantRole(
+      const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
+      const parsedRestaurantId = parseInt(restaurantId, 10);
+      if (isNaN(parsedRestaurantId)) {
+        throw new BadRequestException('Invalid restaurantId format');
+      }
+
+      const servantRole = await this.roleService.createServantRole(
         servantRoleData,
-        restaurantId,
+        parsedRestaurantId,
       );
+
       res.status(200).json(servantRole);
     } catch (error) {
       console.log(error);
@@ -51,17 +65,28 @@ export class RoleController {
       ability.can(AllowedActions.UPDATE_ROLE, Role),
   )
   async activateRole(
+    @Request() req,
     @Response() res,
-    @Param('servantRoleId') servantRoleId: any,
+    @Param('servantRoleId') servantRoleId: string,
   ) {
     try {
-      const servantRole = this.roleService.activateServantRole(servantRoleId);
+      const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
+      const parsedServantRoleId = parseInt(servantRoleId, 10);
+      if (isNaN(parsedServantRoleId)) {
+        throw new BadRequestException('Invalid servantRoleId format');
+      }
+
+      const servantRole = await this.roleService.activateServantRole(
+        restaurantId,
+        parsedServantRoleId,
+      );
       res.status(200).json(servantRole);
     } catch (error) {
       console.log(error);
       throw error;
     }
   }
+
   @Patch('deactivate/:servantRoleId')
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies(
@@ -70,17 +95,28 @@ export class RoleController {
       ability.can(AllowedActions.UPDATE_ROLE, Role),
   )
   async deactivateRole(
+    @Request() req,
     @Response() res,
-    @Param('servantRoleId') servantRoleId: any,
+    @Param('servantRoleId') servantRoleId: string,
   ) {
     try {
-      const servantRole = this.roleService.deactivateServantRole(servantRoleId);
+      const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
+      const parsedServantRoleId = parseInt(servantRoleId, 10);
+      if (isNaN(parsedServantRoleId)) {
+        throw new BadRequestException('Invalid servantRoleId format');
+      }
+
+      const servantRole = await this.roleService.deactivateServantRole(
+        restaurantId,
+        parsedServantRoleId,
+      );
       res.status(200).json(servantRole);
     } catch (error) {
       console.log(error);
       throw error;
     }
   }
+
   @Patch('update/:roleId')
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies(
@@ -89,13 +125,17 @@ export class RoleController {
       ability.can(AllowedActions.UPDATE_ROLE, Role),
   )
   async updateServantRole(
+    @Request() req,
     @Response() res,
-    @Param('roleId') roleId: number,
+    @Param('roleId') roleId: string,
     @Body() updateData: any,
   ) {
     try {
+      const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
+      const parsedServantRoleId = parseInt(roleId, 10);
       const result = await this.roleService.updateServantRole(
-        roleId,
+        restaurantId,
+        parsedServantRoleId,
         updateData,
       );
       res.status(200).json(result);
@@ -111,26 +151,72 @@ export class RoleController {
       ability.can(AllowedActions.ALL, All) ||
       ability.can(AllowedActions.DELETE_ROLE, Role),
   )
-  async deleteServantRole(@Response() res, @Param('roleId') roleId: number) {
+  async deleteServantRole(
+    @Request() req,
+    @Response() res,
+    @Param('roleId') roleId: string,
+  ) {
     try {
-      await this.roleService.deleteServantRole(roleId);
+      const roleIdInt = parseInt(roleId);
+      const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
+      await this.roleService.deleteServantRole(restaurantId, roleIdInt);
       res.status(200).json('role deleted');
     } catch (error) {
       console.log(error);
       throw error;
     }
   }
-  @Get('restaurant/:restaurantId')
+  @Get('restaurant')
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(AllowedActions.ALL, All) ||
       ability.can(AllowedActions.GET_ROLES, Role),
   )
-  async getAllRoles(@Param('restaurantId') restaurantId: number) {
+  async getAllRoles(@Request() req, @Response() res) {
     try {
+      const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
       const roles = await this.roleService.getAllRoles(restaurantId);
-      return roles;
+      res.status(200).json(roles);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+  @Get('restaurant/active')
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies(
+    (ability: AppAbility) =>
+      ability.can(AllowedActions.ALL, All) ||
+      ability.can(AllowedActions.GET_ROLES, Role),
+  )
+  async getAllActiveRoles(@Request() req, @Response() res) {
+    try {
+      const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
+      const activeRoles =
+        await this.roleService.getAllActiveRoles(restaurantId);
+      res.status(200).json(activeRoles);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+  @Get('restaurant/role/:roleId')
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies(
+    (ability: AppAbility) =>
+      ability.can(AllowedActions.ALL, All) ||
+      ability.can(AllowedActions.GET_ROLES, Role),
+  )
+  async getSingleRole(
+    @Request() req,
+    @Response() res,
+    @Param('roleId') roleId: number,
+  ) {
+    try {
+      const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
+      const role = await this.roleService.getSingleRole(restaurantId, roleId);
+      res.status(200).json(role);
     } catch (error) {
       console.log(error);
       throw error;

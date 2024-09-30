@@ -7,14 +7,18 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma.service';
 import { z } from 'zod';
-
+import * as bcrypt from 'bcrypt';
 @Injectable()
 export class RestaurantService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
   ) {}
-  async createRestaurant(userData: any, restaurantData: any): Promise<any> {
+  async createRestaurant(
+    resPic: string,
+    userData: any,
+    restaurantData: any,
+  ): Promise<any> {
     try {
       const UserSchema = z.object({
         name: z.string().min(1, 'Name is required'),
@@ -27,8 +31,8 @@ export class RestaurantService {
         location: z.string().min(1, 'location is required').optional(),
       });
       const RestaurantSchema = z.object({
-        name: z.string().min(1, 'Name is required'),
-        location: z.string().min(1, 'Location is required'),
+        restaurantName: z.string().min(1, 'Name is required'),
+        restaurantLocation: z.string().min(1, 'Location is required'),
       });
       const userParsed = UserSchema.safeParse(userData);
       if (!userParsed.success) {
@@ -45,11 +49,12 @@ export class RestaurantService {
         throw new BadRequestException('user already exist');
       }
       let userId: any;
+      const hashedPassword = await bcrypt.hash(userParsed.data.password, 10);
       const newUser = await this.prisma.user.create({
         data: {
           name: userParsed.data.name,
           email: userParsed.data.email,
-          password: userParsed.data.password,
+          password: hashedPassword,
           phoneNumber: userParsed.data.phoneNumber,
           location: userParsed.data.location,
           role: 'ADMIN',
@@ -58,23 +63,16 @@ export class RestaurantService {
       userId = newUser.id;
       const restaurant = await this.prisma.restaurant.create({
         data: {
-          name: restaurantParsed.data.name,
-          location: restaurantParsed.data.location,
+          name: restaurantParsed.data.restaurantName,
+          location: restaurantParsed.data.restaurantLocation,
           users: {
             connect: { id: userId },
           },
+          Picture: resPic,
         },
       });
-      const token = this.jwt.sign(
-        {
-          user: newUser.id,
-          email: newUser.email,
-          role: newUser.role,
-          restaurantId: restaurant.id,
-        },
-        { secret: process.env.secret },
-      );
-      return { restaurant, token };
+
+      return restaurant;
     } catch (error) {
       console.error(error);
       throw error;
@@ -108,11 +106,12 @@ export class RestaurantService {
       if (existingUser) {
         throw new ConflictException('User already exists');
       }
+      const hashedPassword = await bcrypt.hash(parsed.data.password, 10);
       const newUser = await this.prisma.user.create({
         data: {
           name: parsed.data.name,
           email: parsed.data.email,
-          password: parsed.data.password,
+          password: hashedPassword,
           phoneNumber: parsed.data.phoneNumber,
           location: parsed.data.location,
           role: 'ADMIN',
@@ -127,20 +126,7 @@ export class RestaurantService {
           },
         },
       });
-      const token = this.jwt.sign(
-        {
-          user: newUser.id,
-          email: newUser.email,
-          role: newUser.role,
-          restaurantId,
-        },
-        { secret: process.env.secret },
-      );
-      return {
-        message: 'New user added as admin successfully',
-        userId: newUser.id,
-        token,
-      };
+      return newUser;
     } catch (error) {
       console.error(error);
       throw error;

@@ -15,6 +15,7 @@ import { Orders } from 'src/classes/Orders';
 import { Role } from 'src/classes/Role';
 import { Users } from 'src/classes/Users';
 import { PrismaService } from 'src/prisma.service';
+import { AllowedActions } from 'src/utils/enum';
 
 type Subjects = InferSubjects<
   | typeof All

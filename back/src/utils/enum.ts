@@ -1,4 +1,4 @@
-enum AllowedActions {
+export enum AllowedActions {
   SEE_ORDERS = 'SEE_ORDERS',
   UPDATE_ORDERS = 'UPDATE_ORDERS',
   SEE_CUSTOMER_INFO = 'SEE_CUSTOMER_INFO',

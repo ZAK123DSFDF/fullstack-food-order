@@ -10,21 +10,28 @@ import { z } from 'zod';
 @Injectable()
 export class MenuService {
   constructor(private prisma: PrismaService) {}
-  async createMenu(menuData: any): Promise<any> {
+  async createMenu(
+    menuPic: string[],
+    resId: number,
+    menuData: any,
+  ): Promise<any> {
     try {
+      const preparedMenuData = {
+        ...menuData,
+        price: parseFloat(menuData.price),
+      };
       const MenuSchema = z.object({
         name: z.string().min(1, 'Name is required'),
         price: z.number().min(1, 'Price must be greater than zero'),
-        restaurantId: z.number().nonnegative('Invalid restaurant ID'),
         toppings: z.array(z.string()).optional(),
       });
-      const parsed = MenuSchema.safeParse(menuData);
+      const parsed = MenuSchema.safeParse(preparedMenuData);
       if (!parsed.success) {
         throw new BadRequestException(parsed.error.errors);
       }
-      const { name, price, restaurantId, toppings } = parsed.data;
+      const { name, price, toppings } = parsed.data;
       const restaurant = await this.prisma.restaurant.findUnique({
-        where: { id: restaurantId },
+        where: { id: resId },
       });
 
       if (!restaurant) {
@@ -34,11 +41,12 @@ export class MenuService {
         data: {
           name,
           price,
-          restaurantId,
+          restaurantId: resId,
           toppings: toppings || [],
+          Picture: menuPic,
         },
       });
-      return { message: 'Menu item created successfully', menu };
+      return menu;
     } catch (error) {
       console.log(error);
       throw error;
@@ -46,7 +54,9 @@ export class MenuService {
   }
   async getAllMenus(): Promise<any> {
     try {
-      const menus = await this.prisma.menu.findMany();
+      const menus = await this.prisma.menu.findMany({
+        include: { restaurant: true },
+      });
 
       return menus;
     } catch (error) {

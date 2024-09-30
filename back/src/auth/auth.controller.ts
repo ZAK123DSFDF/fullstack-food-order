@@ -18,6 +18,7 @@ import { CheckPolicies } from 'src/decorators/CheckPolicies';
 import { AppAbility } from 'src/casl/casl-ability.factory';
 import { All } from 'src/classes/All';
 import { Users } from 'src/classes/Users';
+import { AllowedActions } from 'src/utils/enum';
 
 @Controller('auth')
 export class AuthController {
@@ -52,13 +53,15 @@ export class AuthController {
     }
   }
   @Post('create')
-  async createUser(@Body() userData: any) {
+  async createUser(@Response() res, @Body() userData: any) {
     try {
       const user = await this.authService.createUser(userData);
-      return {
-        message: 'User created successfully',
-        data: user,
-      };
+      res.cookie('token', user.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 86400000,
+      });
+      res.status(200).json(user);
     } catch (error) {
       console.log(error);
       throw error;
@@ -71,13 +74,18 @@ export class AuthController {
       ability.can(AllowedActions.ALL, All) ||
       ability.can(AllowedActions.ADD_USER, Users),
   )
-  async createServant(@Body() servantData: any) {
+  async createServant(
+    @Request() req,
+    @Response() res,
+    @Body() servantData: any,
+  ) {
     try {
-      const servant = await this.authService.createServant(servantData);
-      return {
-        message: 'servant created successfully',
-        data: servant,
-      };
+      const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
+      const servant = await this.authService.createServant(
+        restaurantId,
+        servantData,
+      );
+      res.status(200).json(servant);
     } catch (error) {
       console.log(error);
       throw error;
@@ -90,13 +98,18 @@ export class AuthController {
       ability.can(AllowedActions.ALL, All) ||
       ability.can(AllowedActions.UPDATE_USER, Users),
   )
-  async activateServant(@Param('userId') userId: number) {
+  async activateServant(
+    @Request() req,
+    @Response() res,
+    @Param('userId') userId: number,
+  ) {
     try {
-      const result = await this.authService.activateServant(Number(userId));
-      return {
-        message: 'Servant activated successfully',
-        data: result,
-      };
+      const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
+      const result = await this.authService.activateServant(
+        restaurantId,
+        Number(userId),
+      );
+      res.status(200).json(result);
     } catch (error) {
       console.log(error);
       throw error;
@@ -109,13 +122,18 @@ export class AuthController {
       ability.can(AllowedActions.ALL, All) ||
       ability.can(AllowedActions.UPDATE_USER, Users),
   )
-  async deactivateServant(@Param('userId') userId: number) {
+  async deactivateServant(
+    @Request() req,
+    @Response() res,
+    @Param('userId') userId: number,
+  ) {
     try {
-      const result = await this.authService.deactivateServant(Number(userId));
-      return {
-        message: 'Servant activated successfully',
-        data: result,
-      };
+      const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
+      const result = await this.authService.deactivateServant(
+        restaurantId,
+        Number(userId),
+      );
+      res.status(200).json(result);
     } catch (error) {
       console.log(error);
       throw error;
@@ -128,40 +146,50 @@ export class AuthController {
       ability.can(AllowedActions.ALL, All) ||
       ability.can(AllowedActions.DELETE_USER, Users),
   )
-  async deleteServantUser(@Param('userId') userId: number) {
+  async deleteServantUser(
+    @Request() req,
+    @Response() res,
+    @Param('userId') userId: number,
+  ) {
     try {
-      const result = await this.authService.deleteServantUser(Number(userId));
-      return {
-        message: result.message,
-      };
+      const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
+      const result = await this.authService.deleteServantUser(
+        restaurantId,
+        Number(userId),
+      );
+      res.status(200).json(result.message);
     } catch (error) {
       console.log(error);
       throw error;
     }
   }
-  @Get('all/:restaurantId')
+  @Get('all')
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(AllowedActions.ALL, All) ||
       ability.can(AllowedActions.GET_USERS, Users),
   )
-  async getAllServants(@Param('restaurantId') restaurantId: number) {
+  async getAllServants(@Request() req, @Response() res) {
     try {
-      const servants = await this.authService.getAllServants(
-        Number(restaurantId),
-      );
-      return servants;
+      const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
+      const servants = await this.authService.getAllServants(restaurantId);
+      res.status(200).json(servants);
     } catch (error) {
       console.log(error);
       throw error;
     }
   }
   @Post('login')
-  async login(@Body() userData: any) {
+  async login(@Response() res, @Body() userData: any) {
     try {
       const result = await this.authService.validateUser(userData);
-      return result;
+      res.cookie('token', result.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 86400000,
+      });
+      res.status(200).json(result);
     } catch (error) {
       console.log(error);
       throw error;
