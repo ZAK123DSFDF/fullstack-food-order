@@ -1,8 +1,47 @@
 "use client";
 import { Box, Button, TextField, Typography } from "@mui/material";
+import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { addAdmin } from "../actions/restaurant/addAdmin";
 
 export default function Signup() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    reset,
+  } = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      phoneNumber: "",
+      location: "",
+    },
+    mode: "onBlur",
+  });
+
+  const password = watch("password");
+  const { mutate, isPending } = useMutation({
+    mutationFn: addAdmin,
+    onSuccess: (data) => {
+      console.log(data);
+      reset();
+    },
+  });
+  const onSubmit = (data) => {
+    mutate({
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      phoneNumber: data.phoneNumber,
+      location: data.location,
+    });
+  };
+
   return (
     <Box
       sx={{
@@ -44,6 +83,7 @@ export default function Signup() {
       >
         <Box
           component="form"
+          onSubmit={handleSubmit(onSubmit)}
           sx={{
             display: "flex",
             alignItems: "center",
@@ -92,42 +132,88 @@ export default function Signup() {
               minWidth: { xs: "280px", sm: "400px" },
             }}
           >
+            {/* Name Field */}
             <TextField
-              label="Restaurant Name"
+              label="Name"
               variant="outlined"
-              type="text"
               fullWidth
+              {...register("name", { required: "Name is required" })}
+              error={Boolean(errors.name)}
+              helperText={errors.name?.message}
             />
-            <TextField
-              label="Admin name"
-              variant="outlined"
-              type="text"
-              fullWidth
-            />
+
+            {/* Email Field */}
             <TextField
               label="Email"
               variant="outlined"
               type="email"
               fullWidth
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                  message: "Please enter a valid email",
+                },
+              })}
+              error={Boolean(errors.email)}
+              helperText={errors.email?.message}
             />
+
+            {/* Password Field */}
             <TextField
               label="Password"
               variant="outlined"
               type="password"
               fullWidth
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters long",
+                },
+              })}
+              error={Boolean(errors.password)}
+              helperText={errors.password?.message}
             />
+
+            {/* Confirm Password Field */}
             <TextField
               label="Confirm Password"
               variant="outlined"
               type="password"
               fullWidth
+              {...register("confirmPassword", {
+                required: "Please confirm your password",
+                validate: (value) =>
+                  value === password || "Passwords do not match",
+              })}
+              error={Boolean(errors.confirmPassword)}
+              helperText={errors.confirmPassword?.message}
             />
+
+            {/* Phone Number Field */}
             <TextField
               label="Phone Number"
               variant="outlined"
-              type="text"
               fullWidth
+              {...register("phoneNumber", {
+                required: "Phone number is required",
+              })}
+              error={Boolean(errors.phoneNumber)}
+              helperText={errors.phoneNumber?.message}
             />
+
+            {/* Location Field */}
+            <TextField
+              label="Location"
+              variant="outlined"
+              fullWidth
+              {...register("location", { required: "Location is required" })}
+              error={Boolean(errors.location)}
+              helperText={errors.location?.message}
+            />
+
+            {/* Submit Button */}
             <Button
               variant="contained"
               sx={{
@@ -137,7 +223,7 @@ export default function Signup() {
               type="submit"
               fullWidth
             >
-              submit
+              {isPending ? "submitting" : "submit"}
             </Button>
           </Box>
         </Box>

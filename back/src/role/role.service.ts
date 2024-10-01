@@ -122,6 +122,7 @@ export class RoleService {
     updateData: any,
   ): Promise<any> {
     try {
+      console.log(resId, roleId, updateData);
       const updateServantRoleSchema = z.object({
         name: z.string().min(1).optional(),
         allowedActions: z

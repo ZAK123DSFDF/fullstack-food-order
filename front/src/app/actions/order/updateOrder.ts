@@ -1,6 +1,7 @@
 "use server";
 import { cookies } from "next/headers";
-export const updateOrder = async (id: any, newStatus: any) => {
+export const updateOrder = async ({ id, status }: any) => {
+  console.log(status);
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/order/status/${id}`,
     {
@@ -10,7 +11,7 @@ export const updateOrder = async (id: any, newStatus: any) => {
         "Content-Type": "application/json",
         Cookie: cookies().toString(),
       },
-      body: JSON.stringify(newStatus),
+      body: JSON.stringify({ status }),
     }
   );
   if (!response.ok) {

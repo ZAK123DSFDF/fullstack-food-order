@@ -46,7 +46,7 @@ export default function OrderHistory() {
             flexWrap: "wrap",
           }}
         >
-          <Card />
+          <Card mode="orderHistory" />
         </Box>
       </Box>
     </Box>

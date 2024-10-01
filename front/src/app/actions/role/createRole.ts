@@ -1,6 +1,6 @@
 "use server";
 import { cookies } from "next/headers";
-export const createRole = async (roleData: any) => {
+export const createRole = async ({ name, allowedActions }: any) => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/role/create`,
     {
@@ -10,7 +10,7 @@ export const createRole = async (roleData: any) => {
         "Content-Type": "application/json",
         Cookie: cookies().toString(),
       },
-      body: JSON.stringify(roleData),
+      body: JSON.stringify({ name, allowedActions }),
     }
   );
   if (!response.ok) {

@@ -11,12 +11,17 @@ export class OrderService {
   constructor(private prisma: PrismaService) {}
   async createOrder(customerId: number, orderData: any): Promise<any> {
     try {
+      const improvedOrderData = {
+        ...orderData,
+        menuId: parseInt(orderData.menuId), // Convert menuId to a number
+      };
+
       const OrderSchema = z.object({
         menuId: z.number().nonnegative('Invalid menu ID'),
         count: z.number().min(1, 'Count must be at least 1').optional(),
         toppings: z.array(z.string()).optional(),
       });
-      const parsed = OrderSchema.safeParse(orderData);
+      const parsed = OrderSchema.safeParse(improvedOrderData);
       if (!parsed.success) {
         throw new BadRequestException(parsed.error.errors);
       }
@@ -67,6 +72,7 @@ export class OrderService {
     newStatus: string,
   ): Promise<any> {
     try {
+      console.log('this is the data', resId, orderId, newStatus);
       const OrderStatusSchema = z.enum(['PREPARING', 'READY', 'DELIVERED']);
       const parsed = OrderStatusSchema.safeParse(newStatus);
       if (!parsed.success) {
@@ -107,7 +113,7 @@ export class OrderService {
       const orders = await this.prisma.order.findMany({
         where: { customerId },
         include: {
-          menu: true,
+          menu: { include: { restaurant: true } },
         },
       });
       if (!orders || orders.length === 0) {

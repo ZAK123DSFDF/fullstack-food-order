@@ -13,74 +13,163 @@ import {
   FormControlLabel,
   TextField,
 } from "@mui/material";
-import { useMemo, useState } from "react";
-import { MaterialReactTable } from "material-react-table";
+import { useEffect, useMemo, useState } from "react";
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
 import BreadCrumbs from "./BreadCrumbs";
+import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { getAllRoles } from "../actions/role/getAllRoles";
+import { createRole } from "../actions/role/createRole";
+import DialogCom from "./Dialog";
+import { getSingleRole } from "../actions/role/getSingleRole";
+import { updateRole } from "../actions/role/updateRole";
+import { activateRole } from "../actions/role/activateRole";
+import { deactivateRole } from "../actions/role/deactivateRole";
+import { deleteRole } from "../actions/role/deleteRole";
 
 export default function RoleManagement() {
   const [dialogData, setDialogData] = useState(null);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [roleId, setRoleId] = useState(null);
+
   const [newRole, setNewRole] = useState({
     roleName: "",
     permissions: {
-      updateUser: false,
-      deleteUser: false,
-      addUser: false,
+      SEE_ORDERS: false,
+      UPDATE_ORDERS: false,
+      ADD_MENU: false,
+      ADD_ROLE: false,
+      UPDATE_ROLE: false,
+      DELETE_ROLE: false,
+      GET_ROLES: false,
+      ADD_USER: false,
+      UPDATE_USER: false,
+      DELETE_USER: false,
+      GET_USERS: false,
     },
   });
 
-  const [roles, setRoles] = useState([
-    {
-      roleName: "Admin",
-      createdAt: "2024-09-25",
-      active: true,
-      permissions: { updateUser: true, deleteUser: true, addUser: true },
+  const queryClient = new QueryClient();
+  const { mutate } = useMutation({
+    mutationFn: createRole,
+    onSuccess: (data) => {
+      console.log(data);
+      //@ts-ignore
+      queryClient.invalidateQueries["allRoles"];
     },
-    {
-      roleName: "Editor",
-      createdAt: "2024-09-26",
-      active: false,
-      permissions: { updateUser: true, deleteUser: false, addUser: true },
-    },
-  ]);
-
-  const handleToggleActive = (index) => {
-    const updatedRoles = roles.map((role, idx) =>
-      idx === index ? { ...role, active: !role.active } : role
-    );
-    setRoles(updatedRoles);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value, checked, type } = e.target;
-    setNewRole((prevRole) => ({
-      ...prevRole,
-      [type === "checkbox" ? "permissions" : name]:
-        type === "checkbox"
-          ? { ...prevRole.permissions, [name]: checked }
-          : value,
-    }));
-  };
-
+  });
   const handleAddNewRole = () => {
-    setRoles((prevRoles) => [
-      ...prevRoles,
-      {
-        ...newRole,
-        createdAt: new Date().toISOString().split("T")[0],
-        active: true,
-      },
-    ]);
+    console.log(newRole);
+    console.log(Object.entries(newRole.permissions));
+    if (newRole.roleName.trim() === "") {
+      console.log("You need to type something for the role name.");
+      return;
+    }
+    const hasSelectedPermission = Object.values(newRole.permissions).some(
+      (value) => value === true
+    );
+
+    if (!hasSelectedPermission) {
+      console.log("You should at least select one permission.");
+      return;
+    }
+    const selectedPermissions = Object.entries(newRole.permissions)
+      .filter(([key, value]) => value === true)
+      .map(([key]) => key);
+    mutate({ name: newRole.roleName, allowedActions: selectedPermissions });
     setOpenAddDialog(false);
   };
+
+  const { data } = useQuery({
+    queryKey: ["allRoles"],
+    queryFn: () => getAllRoles(),
+  });
+  const { data: data1, isPending } = useQuery({
+    queryKey: ["getSingleRole"],
+    queryFn: () => getSingleRole(roleId),
+    enabled: !!roleId,
+  });
+  const { mutate: mutate1 } = useMutation({
+    mutationFn: updateRole,
+    onSuccess: (data) => {
+      console.log(data);
+      //@ts-ignore
+      queryClient.invalidateQueries["allRoles"];
+    },
+  });
+  const { mutate: activate } = useMutation({
+    mutationFn: activateRole,
+    onSuccess: (data) => {
+      console.log(data);
+      //@ts-ignore
+      queryClient.invalidateQueries["allRoles"];
+    },
+  });
+  const { mutate: deactivate } = useMutation({
+    mutationFn: deactivateRole,
+    onSuccess: (data) => {
+      console.log(data);
+      //@ts-ignore
+      queryClient.invalidateQueries["allRoles"];
+    },
+  });
+  const { mutate: deleteId } = useMutation({
+    mutationFn: deleteRole,
+    onSuccess: (data) => {
+      console.log(data);
+      //@ts-ignore
+      queryClient.invalidateQueries["allRoles"];
+    },
+  });
+  const handleDelete = (id: any) => {
+    deleteId(id);
+  };
+  const handleToggle = (id: any, state: any) => {
+    if (state) {
+      deactivate(id);
+    } else {
+      activate(id);
+    }
+  };
+  const handleEditData = (id: any) => {
+    console.log(newRole);
+    console.log(Object.entries(newRole.permissions));
+    if (newRole.roleName.trim() === "") {
+      console.log("You need to type something for the role name.");
+      return;
+    }
+    const hasSelectedPermission = Object.values(newRole.permissions).some(
+      (value) => value === true
+    );
+
+    if (!hasSelectedPermission) {
+      console.log("You should at least select one permission.");
+      return;
+    }
+    const selectedPermissions = Object.entries(newRole.permissions)
+      .filter(([key, value]) => value === true)
+      .map(([key]) => key);
+    console.log(newRole);
+    mutate1({
+      name: newRole.roleName,
+      allowedActions: selectedPermissions,
+      id,
+    });
+    setIsEditing(false);
+  };
+  useEffect(() => {
+    console.log(data1);
+  }, [data1]);
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: "roleName",
+        accessorKey: "name",
         header: "Role Name",
       },
       {
@@ -88,7 +177,7 @@ export default function RoleManagement() {
         header: "Created At",
       },
       {
-        accessorKey: "actions",
+        accessorKey: "active",
         header: "Actions",
         Cell: ({ row }) => (
           <Box display="flex" alignItems="center">
@@ -106,10 +195,11 @@ export default function RoleManagement() {
             >
               <Switch
                 checked={row.original.active}
-                onChange={() => handleToggleActive(row.index)}
                 name="activeToggle"
+                onClick={() =>
+                  handleToggle(row.original.id, row.original.active)
+                }
               />
-
               <Typography sx={{ mr: 2 }}>
                 {row.original.active ? "Active" : "Inactive"}
               </Typography>
@@ -118,20 +208,35 @@ export default function RoleManagement() {
             <IconButton
               onClick={() => {
                 setDialogData(row.original);
-                setIsEditMode(true);
+                setIsEditing(true);
+                setRoleId(row.original.id);
               }}
             >
               <VisibilityIcon />
             </IconButton>
-            <IconButton onClick={() => console.log("Delete action")}>
+            <IconButton onClick={() => handleDelete(row.original.id)}>
               <DeleteIcon />
             </IconButton>
           </Box>
         ),
       },
     ],
-    [roles]
+    []
   );
+
+  const table = useMaterialReactTable({
+    columns,
+    data: data || [],
+    renderTopToolbarCustomActions: () => (
+      <Button
+        onClick={() => setOpenAddDialog(true)}
+        variant="contained"
+        color="primary"
+      >
+        Add New Role
+      </Button>
+    ),
+  });
 
   return (
     <Box sx={{ width: "100%", height: "100%", overflow: "hidden" }}>
@@ -155,158 +260,23 @@ export default function RoleManagement() {
             padding: 2,
           }}
         >
-          <MaterialReactTable
-            columns={columns}
-            data={roles}
-            renderTopToolbarCustomActions={() => (
-              <Box sx={{ padding: 2, textAlign: "center" }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => setOpenAddDialog(true)}
-                >
-                  Add New Role
-                </Button>
-              </Box>
-            )}
-          />
+          <MaterialReactTable table={table} />
         </Box>
       </Box>
-
-      {/* Add New Role Dialog */}
-      <Dialog
-        open={openAddDialog}
-        onClose={() => setOpenAddDialog(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>Add New Role</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Role Name"
-            name="roleName"
-            value={newRole.roleName}
-            onChange={handleInputChange}
-            fullWidth
-            margin="normal"
-          />
-          <Typography sx={{ mt: 2 }}>Permissions:</Typography>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newRole.permissions.updateUser}
-                onChange={handleInputChange}
-                name="updateUser"
-              />
-            }
-            label="Update User"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newRole.permissions.deleteUser}
-                onChange={handleInputChange}
-                name="deleteUser"
-              />
-            }
-            label="Delete User"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newRole.permissions.addUser}
-                onChange={handleInputChange}
-                name="addUser"
-              />
-            }
-            label="Add User"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenAddDialog(false)} color="secondary">
-            Cancel
-          </Button>
-          <Button
-            onClick={handleAddNewRole}
-            color="primary"
-            variant="contained"
-          >
-            Add Role
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* View/Edit Role Dialog */}
-      <Dialog
-        open={!!dialogData}
-        onClose={() => setDialogData(null)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>
-          {isEditMode
-            ? `Edit Role: ${dialogData?.roleName}`
-            : `Role: ${dialogData?.roleName}`}
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Role Name"
-            name="roleName"
-            value={dialogData?.roleName}
-            fullWidth
-            disabled={!isEditMode}
-            margin="normal"
-          />
-          <Typography sx={{ mt: 2 }}>Permissions:</Typography>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={dialogData?.permissions.updateUser}
-                name="updateUser"
-                disabled={!isEditMode}
-              />
-            }
-            label="Update User"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={dialogData?.permissions.deleteUser}
-                name="deleteUser"
-                disabled={!isEditMode}
-              />
-            }
-            label="Delete User"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={dialogData?.permissions.addUser}
-                name="addUser"
-                disabled={!isEditMode}
-              />
-            }
-            label="Add User"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogData(null)} color="secondary">
-            Close
-          </Button>
-          {isEditMode && (
-            <Button
-              onClick={() => {
-                console.log("Update role");
-                setDialogData(null);
-              }}
-              color="primary"
-              variant="contained"
-            >
-              Update Role
-            </Button>
-          )}
-        </DialogActions>
-      </Dialog>
+      <DialogCom
+        newRole={newRole}
+        isEditing={isEditing}
+        setIsEditing={setIsEditing}
+        setNewRole={setNewRole}
+        openAddDialog={openAddDialog}
+        setOpenAddDialog={setOpenAddDialog}
+        handleAddNewRole={handleAddNewRole}
+        roleId={roleId}
+        setRoleId={setRoleId}
+        data1={data1}
+        isPending={isPending}
+        handleEditData={handleEditData}
+      />
     </Box>
   );
 }

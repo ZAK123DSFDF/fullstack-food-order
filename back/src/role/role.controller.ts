@@ -211,11 +211,15 @@ export class RoleController {
   async getSingleRole(
     @Request() req,
     @Response() res,
-    @Param('roleId') roleId: number,
+    @Param('roleId') roleId: string,
   ) {
     try {
       const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
-      const role = await this.roleService.getSingleRole(restaurantId, roleId);
+      const roleIdInt = parseInt(roleId);
+      const role = await this.roleService.getSingleRole(
+        restaurantId,
+        roleIdInt,
+      );
       res.status(200).json(role);
     } catch (error) {
       console.log(error);

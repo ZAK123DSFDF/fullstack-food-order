@@ -5,11 +5,22 @@ import Image from "next/image";
 import { getAllMenus } from "../actions/menu/getAllMenus";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getAllMenusExcluding } from "../actions/menu/getAllMenusExcluding";
+import { getOrderHistory } from "../actions/order/getOrderHistory";
 
-export default function Card({ data: data1 }: any) {
+export default function Card({ id, mode, data: data1, data2 }: any) {
+  const queryFn = () => {
+    if (mode === "allData") {
+      return getAllMenus();
+    } else if (mode === "menuDetails") {
+      return getAllMenusExcluding(id);
+    } else if (mode === "orderHistory") {
+      return getOrderHistory();
+    }
+  };
   const { data } = useQuery({
-    queryKey: ["menus"],
-    queryFn: () => getAllMenus(),
+    queryKey: ["menus", mode],
+    queryFn,
   });
   useEffect(() => {
     console.log(data);
@@ -18,6 +29,8 @@ export default function Card({ data: data1 }: any) {
   const handleNavigation: any = (id: any) => {
     if (data1?.isAuthenticated) {
       router.push(`menuDetail/${id}`);
+    } else if (data2?.isAuthenticated) {
+      router.push(`${id}`);
     } else {
       router.push("/login");
     }
@@ -41,7 +54,11 @@ export default function Card({ data: data1 }: any) {
             }}
           >
             <Image
-              src={menu.Picture[0]}
+              src={
+                mode === "orderHistory"
+                  ? menu?.menu?.Picture[0]
+                  : menu?.Picture[0]
+              }
               width={300}
               height={300}
               alt="card"
@@ -53,8 +70,14 @@ export default function Card({ data: data1 }: any) {
                 alignSelf: "center",
               }}
             />
-            <Typography>{menu.name}</Typography>
-            <Typography>{menu.toppings.join(", ")}</Typography>
+            <Typography>
+              {mode === "orderHistory" ? menu?.menu?.name : menu?.name}
+            </Typography>
+            <Typography>
+              {mode === "orderHistory"
+                ? menu?.menu?.toppings.join(", ")
+                : menu?.toppings.join(",")}
+            </Typography>
             <Box
               sx={{
                 display: "flex",
@@ -64,7 +87,7 @@ export default function Card({ data: data1 }: any) {
               }}
             >
               <Typography>
-                {menu.price}
+                {mode === "orderHistory" ? menu?.menu?.price : menu?.price}
                 <Typography
                   component="span"
                   sx={{
@@ -101,7 +124,11 @@ export default function Card({ data: data1 }: any) {
                   style={{ objectFit: "cover" }}
                 />
               </Box>
-              <Typography>{menu.restaurant.name}</Typography>
+              <Typography>
+                {mode === "orderHistory"
+                  ? menu?.menu?.restaurant?.name
+                  : menu?.restaurant?.name}
+              </Typography>
             </Box>
           </Box>
         );

@@ -1,6 +1,12 @@
 "use server";
 import { cookies } from "next/headers";
-export const addAdmin = async (userData: any) => {
+export const addAdmin = async ({
+  name,
+  email,
+  password,
+  phoneNumber,
+  location,
+}: any) => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/restaurant/addAdmin`,
     {
@@ -10,7 +16,7 @@ export const addAdmin = async (userData: any) => {
         "Content-Type": "application/json",
         Cookie: cookies().toString(),
       },
-      body: JSON.stringify(userData),
+      body: JSON.stringify({ name, email, password, phoneNumber, location }),
     }
   );
   if (!response.ok) {

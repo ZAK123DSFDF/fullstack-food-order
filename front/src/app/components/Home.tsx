@@ -5,6 +5,8 @@ import Image from "next/image";
 import { Facebook, Linkedin, Shield, Twitter, Youtube } from "lucide-react";
 import Scrollable from "./Scrollable";
 import Card from "./Card";
+import { useQuery } from "@tanstack/react-query";
+import { getAllMenus } from "../actions/menu/getAllMenus";
 
 export default function Home({ data }: any) {
   useEffect(() => {
@@ -218,7 +220,7 @@ export default function Home({ data }: any) {
             justifyContent: { xs: "center", lg: "flex-start" },
           }}
         >
-          <Card data={data} />
+          <Card data={data} mode="allData" />
         </Box>
       </Box>
       <Box
@@ -257,7 +259,7 @@ export default function Home({ data }: any) {
             },
           }}
         >
-          <Card />
+          <Card data={data} mode="allData" />
         </Box>
       </Box>
       <Box

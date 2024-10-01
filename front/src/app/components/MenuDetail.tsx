@@ -13,13 +13,13 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import Card from "./Card";
 import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { getSingleMenu } from "../actions/menu/getSingleMenu";
+import { createOrder } from "../actions/order/createOrder";
 
-export default function MenuDetail() {
+export default function MenuDetail({ data: data2 }: any) {
   const params = useParams();
   const [count, setCount] = useState(1);
-  // Fetching the menu details
   const { data } = useQuery({
     queryKey: ["singleMenu"],
     queryFn: () => getSingleMenu(params.id),
@@ -27,50 +27,36 @@ export default function MenuDetail() {
 
   const [selectedImage, setSelectedImage] = useState("");
   const [checkedToppings, setCheckedToppings] = useState<boolean[]>([]);
-
-  // Set default selected image and initialize toppings checkboxes
   useEffect(() => {
     if (data) {
-      setSelectedImage(data.Picture[0]); // Set first image by default
-      // Initialize the checkedToppings array based on the toppings array from the server
+      setSelectedImage(data.Picture[0]);
       const initialChecked = data.toppings?.map(() => false) || [];
       setCheckedToppings(initialChecked);
     }
   }, [data]);
-  useEffect(() => {
-    console.log(checkedToppings);
-    const selectedToppings = data?.toppings?.filter(
-      (_, index) => checkedToppings[index]
-    );
-    console.log(selectedToppings);
-  }, [checkedToppings, data]);
   const handleImageSelect = (img: string) => {
     setSelectedImage(img);
   };
-
-  // Handle checkbox change for toppings
   const handleToppingChange = (index: number) => {
     const updatedCheckedToppings = [...checkedToppings];
     updatedCheckedToppings[index] = !updatedCheckedToppings[index];
     setCheckedToppings(updatedCheckedToppings);
   };
-
-  // Track the selected toppings for order
+  const [open, setOpen] = useState(false);
+  const handleClickOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const { mutate, isPending } = useMutation({
+    mutationFn: createOrder,
+    onSuccess: (data) => {
+      console.log(data);
+    },
+  });
   const handleOrder = () => {
     const selectedToppings = data.toppings?.filter(
       (_, index) => checkedToppings[index]
     );
-    console.log("Selected toppings:", selectedToppings);
-    // You can send the selectedToppings to the server here
+    mutate({ menuId: params.id, count, toppings: selectedToppings });
   };
-
-  // Modal state
-  const [open, setOpen] = useState(false);
-
-  // Handle modal open/close
-  const handleClickOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
   return (
     <Box
       sx={{
@@ -229,8 +215,8 @@ export default function MenuDetail() {
             </Typography>
           </Box>
 
-          <Button sx={{ alignSelf: "flex-start" }} onClick={handleClickOpen}>
-            Order
+          <Button sx={{ alignSelf: "flex-start" }} onClick={handleOrder}>
+            {isPending ? "ordering" : "order"}
           </Button>
         </Box>
       </Box>
@@ -255,7 +241,7 @@ export default function MenuDetail() {
             overflow: "auto",
           }}
         >
-          <Card />
+          <Card mode="menuDetails" id={params.id} data2={data2} />
         </Box>
       </Box>
 

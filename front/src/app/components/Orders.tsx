@@ -13,38 +13,50 @@ import {
   Typography,
 } from "@mui/material";
 import BreadCrumbs from "./BreadCrumbs";
-import { useMemo, useState } from "react";
-import { MaterialReactTable } from "material-react-table";
+import { useEffect, useMemo, useState } from "react";
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getRestaurantOrders } from "../actions/order/getRestaurantOrders";
+import { updateOrder } from "../actions/order/updateOrder";
 
 export default function Orders() {
   const [dialogData, setDialogData] = useState(null);
-  const [status, setStatus] = useState("preparing");
 
-  // Dummy Data
-  const data = useMemo(
-    () => [
-      {
-        pizzaName: "Margherita",
-        toppings: ["Cheese", "Tomato"],
-        quantity: 2,
-        customerPhone: "555-1234",
-        createdAt: "2024-09-25",
-      },
-      {
-        pizzaName: "Pepperoni",
-        toppings: ["Pepperoni", "Cheese"],
-        quantity: 1,
-        customerPhone: "555-5678",
-        createdAt: "2024-09-26",
-      },
-    ],
-    []
-  );
-
+  const { data: data1 } = useQuery({
+    queryKey: ["orders"],
+    queryFn: () => getRestaurantOrders(),
+  });
+  const [orderData, setOrderData] = useState([]);
+  const [status, setStatus] = useState([]);
+  const queryClient = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: updateOrder,
+    onSuccess: (data) => {
+      console.log(data);
+      //@ts-ignore
+      queryClient.invalidateQueries(["orders"]);
+    },
+  });
+  const handleUpdate = (id: any, status: any) => {
+    mutate({ id, status });
+  };
+  useEffect(() => {
+    if (data1) {
+      setOrderData(data1);
+      console.log(orderData);
+      setStatus(data1.map((order) => order.orderStatus || "PREPARING"));
+    }
+  }, [data1, orderData]);
+  useEffect(() => {
+    console.log(status);
+  }, [status]);
   const columns = useMemo(
     () => [
       {
-        accessorKey: "pizzaName",
+        accessorKey: "menu.name",
         header: "Pizza Name",
       },
       {
@@ -60,39 +72,69 @@ export default function Orders() {
         ),
       },
       {
-        accessorKey: "quantity",
+        accessorKey: "count",
         header: "Quantity",
       },
       {
-        accessorKey: "customerPhone",
+        accessorKey: "customer.phoneNumber",
         header: "Customer Phone",
+      },
+      {
+        accessorKey: "customer.name",
+        header: "Customer name",
+      },
+      {
+        accessorKey: "customer.email",
+        header: "Customer email",
+      },
+      {
+        accessorKey: "customer.location",
+        header: "Customer Location",
       },
       {
         accessorKey: "createdAt",
         header: "Created At",
       },
       {
-        accessorKey: "status",
+        accessorKey: "orderStatus",
         header: "Order Status",
-        Cell: () => (
-          <FormControl fullWidth>
-            <InputLabel>Status</InputLabel>
-            <Select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              label="Status"
-            >
-              <MenuItem value="preparing">Preparing</MenuItem>
-              <MenuItem value="ready">Ready</MenuItem>
-              <MenuItem value="delivered">Delivered</MenuItem>
-            </Select>
-          </FormControl>
-        ),
+        Cell: ({ row }: any) => {
+          const rowIndex = row.index; // Get the index of the current row
+          return (
+            <FormControl fullWidth>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={status[rowIndex] || row.original.orderStatus}
+                onChange={(e) => {
+                  const updatedStatus = [...status];
+                  updatedStatus[rowIndex] = e.target.value;
+                  setStatus(updatedStatus);
+                  handleUpdate(row.original.id, updatedStatus[rowIndex]);
+                }}
+                label="Status"
+              >
+                <MenuItem value="PREPARING">PREPARING</MenuItem>
+                <MenuItem value="READY">READY</MenuItem>
+                <MenuItem value="DELIVERED">DELIVERED</MenuItem>
+              </Select>
+            </FormControl>
+          );
+        },
       },
     ],
     [status]
   );
-
+  const table = useMaterialReactTable({
+    columns,
+    data: orderData || [],
+    renderTopToolbarCustomActions: () => (
+      <Typography
+        sx={{ fontWeight: "bold", fontSize: "15px", marginLeft: "5px" }}
+      >
+        Live Book Status
+      </Typography>
+    ),
+  });
   return (
     <Box sx={{ width: "100%", height: "100%", overflow: "hidden" }}>
       <BreadCrumbs />
@@ -132,7 +174,7 @@ export default function Orders() {
             },
           }}
         >
-          <MaterialReactTable columns={columns} data={data} />
+          <MaterialReactTable table={table} />
         </Box>
         <Dialog
           open={!!dialogData}
@@ -151,15 +193,9 @@ export default function Orders() {
         >
           {dialogData && (
             <>
-              <DialogTitle id="pizza-details-dialog">
-                {dialogData.pizzaName}
-              </DialogTitle>
               <DialogContent>
                 <Typography sx={{ mt: 2 }}>
                   Toppings: {dialogData.toppings.join(", ")}
-                </Typography>
-                <Typography sx={{ mt: 2 }}>
-                  Quantity: {dialogData.quantity}
                 </Typography>
               </DialogContent>
               <DialogActions>
