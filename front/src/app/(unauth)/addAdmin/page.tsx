@@ -3,7 +3,7 @@ import AddAdmin from "@/app/components/AddAdmin";
 import { redirect } from "next/navigation";
 
 export default async function addAdmin() {
-  const data: any = await checkAuth();
+  const data = await checkAuth();
   if (!data.isAuthenticated) {
     redirect("/login");
   } else if (data.role === "SERVANT") {

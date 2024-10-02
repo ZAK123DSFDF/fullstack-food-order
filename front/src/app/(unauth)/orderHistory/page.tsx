@@ -3,7 +3,7 @@ import OrderHistory from "@/app/components/OrderHistory";
 import { redirect } from "next/navigation";
 
 export default async function orderHistory() {
-  const data: any = await checkAuth();
+  const data = await checkAuth();
   if (data.role === "SERVANT" || data.role === "ADMIN") {
     redirect("/dashboard/orders");
   }

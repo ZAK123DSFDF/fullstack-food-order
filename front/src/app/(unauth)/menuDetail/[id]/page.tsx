@@ -3,7 +3,7 @@ import MenuDetail from "@/app/components/MenuDetail";
 import { redirect } from "next/navigation";
 
 export default async function menuDetail() {
-  const data: any = await checkAuth();
+  const data = await checkAuth();
   if (data.role === "SERVANT" || data.role === "ADMIN") {
     redirect("/dashboard/orders");
   }
