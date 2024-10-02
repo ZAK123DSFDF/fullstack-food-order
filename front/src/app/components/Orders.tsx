@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -18,13 +19,16 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getRestaurantOrders } from "../actions/order/getRestaurantOrders";
 import { updateOrder } from "../actions/order/updateOrder";
+import useLocalStorage from "@/utils/useLocalStorage";
 
 export default function Orders() {
   const [dialogData, setDialogData] = useState(null);
-
+  const { hasPermissionToViewOrders, hasPermissionToUpdateOrders } =
+    useLocalStorage();
   const { data: data1 } = useQuery({
     queryKey: ["orders"],
     queryFn: () => getRestaurantOrders(),
@@ -40,6 +44,7 @@ export default function Orders() {
       queryClient.invalidateQueries(["orders"]);
     },
   });
+
   const handleUpdate = (id: any, status: any) => {
     mutate({ id, status });
   };
@@ -53,8 +58,9 @@ export default function Orders() {
   useEffect(() => {
     console.log(status);
   }, [status]);
-  const columns = useMemo(
-    () => [
+
+  const columns = useMemo(() => {
+    const baseColumns = [
       {
         accessorKey: "menu.name",
         header: "Pizza Name",
@@ -64,10 +70,19 @@ export default function Orders() {
         header: "Toppings",
         Cell: ({ row }: any) => (
           <Button
-            variant="contained"
+            variant="text" // Use 'text' variant for no background
             onClick={() => setDialogData(row.original)}
+            sx={{
+              color: "orange",
+              fontSize: "0.875rem",
+              display: "flex",
+              alignItems: "center",
+            }}
           >
-            View Toppings
+            <IconButton sx={{ color: "orange" }}>
+              <VisibilityIcon />
+            </IconButton>
+            Toppings
           </Button>
         ),
       },
@@ -81,11 +96,11 @@ export default function Orders() {
       },
       {
         accessorKey: "customer.name",
-        header: "Customer name",
+        header: "Customer Name",
       },
       {
         accessorKey: "customer.email",
-        header: "Customer email",
+        header: "Customer Email",
       },
       {
         accessorKey: "customer.location",
@@ -95,35 +110,77 @@ export default function Orders() {
         accessorKey: "createdAt",
         header: "Created At",
       },
-      {
+    ];
+    if (hasPermissionToUpdateOrders) {
+      baseColumns.push({
         accessorKey: "orderStatus",
         header: "Order Status",
         Cell: ({ row }: any) => {
-          const rowIndex = row.index; // Get the index of the current row
+          const rowIndex = row.index;
           return (
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={status[rowIndex] || row.original.orderStatus}
-                onChange={(e) => {
-                  const updatedStatus = [...status];
-                  updatedStatus[rowIndex] = e.target.value;
-                  setStatus(updatedStatus);
-                  handleUpdate(row.original.id, updatedStatus[rowIndex]);
-                }}
-                label="Status"
-              >
-                <MenuItem value="PREPARING">PREPARING</MenuItem>
-                <MenuItem value="READY">READY</MenuItem>
-                <MenuItem value="DELIVERED">DELIVERED</MenuItem>
-              </Select>
+            <FormControl
+              fullWidth
+              sx={{
+                "& .MuiInputLabel-root": {
+                  textAlign: "right", // Align the label to the right
+                  marginRight: "10px",
+                },
+              }}
+            >
+              <InputLabel shrink>Status</InputLabel>
+              {status[rowIndex] !== "DELIVERED" ? (
+                <Select
+                  value={status[rowIndex] || row.original.orderStatus}
+                  onChange={(e) => {
+                    const updatedStatus = [...status];
+                    updatedStatus[rowIndex] = e.target.value;
+                    setStatus(updatedStatus);
+                    handleUpdate(row.original.id, updatedStatus[rowIndex]);
+                  }}
+                  label=""
+                  sx={{
+                    backgroundColor:
+                      status[rowIndex] === "PREPARING"
+                        ? "orange"
+                        : status[rowIndex] === "READY"
+                        ? "darkgreen"
+                        : status[rowIndex] === "DELIVERED"
+                        ? "lightgreen"
+                        : "inherit",
+                    color: "#fff",
+                    border: "none",
+                    fontSize: "0.875rem",
+                    "& .MuiSelect-select": {
+                      padding: "6px",
+                    },
+                  }}
+                  displayEmpty
+                >
+                  <MenuItem value="PREPARING">PREPARING</MenuItem>
+                  <MenuItem value="READY">READY</MenuItem>
+                  <MenuItem value="DELIVERED">DELIVERED</MenuItem>
+                </Select>
+              ) : (
+                <Typography
+                  sx={{
+                    backgroundColor: "lightgreen",
+                    color: "#fff",
+                    padding: "6px 12px",
+                    borderRadius: "4px",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  DELIVERED
+                </Typography>
+              )}
             </FormControl>
           );
         },
-      },
-    ],
-    [status]
-  );
+      });
+    }
+
+    return baseColumns;
+  }, [hasPermissionToUpdateOrders, status]);
   const table = useMaterialReactTable({
     columns,
     data: orderData || [],
@@ -131,9 +188,10 @@ export default function Orders() {
       <Typography
         sx={{ fontWeight: "bold", fontSize: "15px", marginLeft: "5px" }}
       >
-        Live Book Status
+        Orders
       </Typography>
     ),
+    enablePagination: false,
   });
   return (
     <Box sx={{ width: "100%", height: "100%", overflow: "hidden" }}>
@@ -142,17 +200,18 @@ export default function Orders() {
         sx={{
           width: "100%",
           height: "100%",
-          backgroundColor: "violet",
+          backgroundColor: "#f8f8f8",
           padding: 2,
         }}
       >
         <Box
           sx={{
             maxWidth: "100%",
-            maxHeight: "calc(100% - 60px)", // Adjust height based on padding
+            maxHeight: "calc(100% - 60px)",
             overflow: "auto",
-            boxSizing: "border-box", // Ensures padding is included in width/height
-            backgroundColor: "red",
+            boxSizing: "border-box",
+            backgroundColor: "#ffffff",
+            boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
             borderRadius: "5px",
             padding: 2,
             "&::-webkit-scrollbar": {
@@ -164,7 +223,7 @@ export default function Orders() {
             },
             "&::-webkit-scrollbar-thumb": {
               backgroundColor: "rgba(0, 0, 0, 0.3)",
-              borderRadius: "0", // Set to 0 to remove the border radius
+              borderRadius: "0",
             },
             "&::-webkit-scrollbar-thumb:hover": {
               backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -174,7 +233,11 @@ export default function Orders() {
             },
           }}
         >
-          <MaterialReactTable table={table} />
+          {hasPermissionToViewOrders ? (
+            <MaterialReactTable table={table} />
+          ) : (
+            "you dont have permission"
+          )}
         </Box>
         <Dialog
           open={!!dialogData}
@@ -185,7 +248,7 @@ export default function Orders() {
           sx={{
             "& .MuiDialog-paper": {
               backgroundColor: "background.paper",
-              border: "2px solid #000",
+              borderRadius: 2,
               boxShadow: 24,
               padding: 4,
             },

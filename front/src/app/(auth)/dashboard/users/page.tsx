@@ -1,5 +1,13 @@
+import { checkAuth } from "@/app/actions/user/checkAuth";
 import Users from "@/app/components/Users";
+import { redirect } from "next/navigation";
 
-export default function users() {
+export default async function users() {
+  const data: any = await checkAuth();
+  if (!data.isAuthenticated) {
+    redirect("/login");
+  } else if (data.role === "CUSTOMER") {
+    redirect("/");
+  }
   return <Users />;
 }

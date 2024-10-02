@@ -137,6 +137,8 @@ export class RoleService {
               'ADD_USER',
               'UPDATE_USER',
               'DELETE_USER',
+              'GET_ROLES',
+              'GET_USERS',
             ]),
           )
           .optional(),

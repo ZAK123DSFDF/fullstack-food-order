@@ -49,6 +49,7 @@ export default function MenuDetail({ data: data2 }: any) {
     mutationFn: createOrder,
     onSuccess: (data) => {
       console.log(data);
+      handleClickOpen();
     },
   });
   const handleOrder = () => {
@@ -65,16 +66,17 @@ export default function MenuDetail({ data: data2 }: any) {
         gap: 2,
         width: "100vw",
         height: "100vh",
-        backgroundColor: "blue",
+        overflow: "scroll",
+        backgroundColor: "#fff8f1",
       }}
     >
       <Box
         sx={{
           display: "flex",
           gap: 2,
-          flexDirection: { xs: "column", md: "row" },
-          alignItems: { xs: "flex-start", md: "flex-start" },
-          justifyContent: "flex-start",
+          flexDirection: { xs: "column", lg: "row" },
+          alignItems: { xs: "center", lg: "center" },
+          justifyContent: { xs: "center", lg: "flex-start" },
           paddingX: { xs: 2, sm: 4, md: 6, lg: 10, xl: 12 },
           paddingY: 5,
           width: "100%",
@@ -84,67 +86,90 @@ export default function MenuDetail({ data: data2 }: any) {
         {/* Large Image Box */}
         <Box
           sx={{
-            width: { xs: "100%", md: "500px" },
-            height: { xs: "300px", md: "500px" },
-            overflow: "hidden",
-            borderRadius: "10px",
-            border: "2px solid #ddd",
             display: "flex",
+            flexDirection: { xs: "column", sm: "row" }, // Flex column on extra small and small screens
+            gap: 2,
+            marginTop: { xs: 20, md: 20, lg: 0 },
             justifyContent: "center",
             alignItems: "center",
+            width: "100%", // Ensure it takes full width
           }}
         >
-          <Image
-            src={selectedImage}
-            alt="Selected"
-            width={500}
-            height={500}
-            style={{ objectFit: "cover", width: "100%", height: "100%" }}
-          />
-        </Box>
+          {/* Main Image Box */}
+          <Box
+            sx={{
+              minWidth: { xs: "250px", sm: "300px", md: "500px" },
+              minHeight: { xs: "250px", sm: "300px", md: "500px" },
+              position: "relative",
+              overflow: "hidden",
+              borderRadius: "10px",
+              border: "2px solid #ddd",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Image
+              src={selectedImage}
+              alt="Selected"
+              fill
+              style={{ objectFit: "cover" }}
+            />
+          </Box>
 
-        {/* Thumbnails Box */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "row", md: "column" },
-            gap: 2,
-            justifyContent: "flex-start",
-            alignItems: "flex-start",
-            overflowY: { xs: "auto", md: "auto" },
-            height: { xs: "auto", md: "500px" },
-            maxWidth: { xs: "100%", md: "200px" },
-          }}
-        >
-          {data?.Picture.map((img, index) => (
-            <Box
-              key={index}
-              sx={{
-                minWidth: "80px",
-                minHeight: "80px",
-                cursor: "pointer",
-                border:
-                  selectedImage === img ? "2px solid blue" : "2px solid #ddd",
-                borderRadius: "5px",
-                overflow: "hidden",
-                transition: "border 0.3s ease",
-              }}
-              onClick={() => handleImageSelect(img)}
-            >
-              <Image
-                src={img}
-                alt={`Thumbnail ${index + 1}`}
-                width={80}
-                height={80}
-                style={{ objectFit: "cover", width: "100%", height: "100%" }}
-              />
-            </Box>
-          ))}
+          {/* Thumbnails Box */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "row", sm: "column", md: "column" },
+              gap: 2,
+              justifyContent: "flex-start",
+              alignItems: "flex-start",
+              overflowY: { xs: "auto", md: "auto" },
+              height: { xs: "auto", md: "500px" },
+              maxWidth: { xs: "100%", md: "200px" },
+            }}
+          >
+            {data?.Picture.map((img, index) => (
+              <Box
+                key={index}
+                sx={{
+                  minWidth: { xs: "100px", sm: "120px", md: "150px" },
+                  minHeight: { xs: "100px", sm: "120px", md: "150px" },
+                  maxHeight: { xs: "100px", sm: "120px", md: "150px" },
+                  maxWidth: { xs: "100px", sm: "120px", md: "150px" },
+                  cursor: "pointer",
+                  border:
+                    selectedImage === img ? "2px solid blue" : "2px solid #ddd",
+                  borderRadius: "5px",
+                  overflow: "hidden",
+                  transition: "border 0.3s ease",
+                }}
+                onClick={() => handleImageSelect(img)}
+              >
+                <Image
+                  src={img}
+                  alt={`Thumbnail ${index + 1}`}
+                  width={80}
+                  height={80}
+                  style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                />
+              </Box>
+            ))}
+          </Box>
         </Box>
 
         {/* Toppings & Order Actions */}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <Typography>{data?.name}</Typography>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          <Typography sx={{ fontWeight: "bold", fontSize: 50 }}>
+            {data?.name}
+          </Typography>
 
           {/* Toppings Selection */}
           <Box
@@ -162,52 +187,74 @@ export default function MenuDetail({ data: data2 }: any) {
                   <Checkbox
                     checked={checkedToppings[index] || false}
                     onChange={() => handleToppingChange(index)}
-                    sx={{ color: checkedToppings[index] ? "blue" : "default" }}
+                    size="medium"
+                    sx={{
+                      color: "#e57b0f",
+                      "&.Mui-checked": {
+                        color: "#e57b0f",
+                      },
+                      "&.Mui-checked:hover": {
+                        backgroundColor: "transparent",
+                      },
+                    }}
                   />
                 }
-                label={topping}
+                label={
+                  <Typography sx={{ fontSize: "1.2rem" }}>
+                    {" "}
+                    {/* Adjust fontSize as needed */}
+                    {topping}
+                  </Typography>
+                }
               />
             ))}
           </Box>
 
           {/* Quantity and Price */}
-          <Box sx={{ display: "flex", gap: 2 }}>
+          <Box sx={{ display: "flex", gap: 4, alignItems: "baseline" }}>
             <Box
               sx={{
-                minWidth: 30,
-                minHeight: 30,
+                minWidth: 60,
+                minHeight: 60,
                 backgroundColor: "white",
                 borderRadius: "5px",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
+                cursor: "pointer",
               }}
               onClick={() => count > 1 && setCount((prev) => prev - 1)}
             >
               <Minus />
             </Box>
-            <Typography>{count}</Typography>
+            <Typography sx={{ fontWeight: "bold", fontSize: 30 }}>
+              {count}
+            </Typography>
             <Box
               sx={{
-                minWidth: 30,
-                minHeight: 30,
+                minWidth: 60,
+                minHeight: 60,
                 backgroundColor: "white",
                 borderRadius: "5px",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
+                cursor: "pointer",
               }}
               onClick={() => setCount((prev) => prev + 1)}
             >
               <Plus />
             </Box>
-            <Typography>
+            <Typography
+              sx={{ fontWeight: "bold", color: "#e57b0f", fontSize: "3rem" }}
+            >
               {data?.price}
               <Typography
                 component="span"
                 sx={{
-                  fontSize: "0.75em",
+                  fontSize: "1rem",
                   marginLeft: "4px",
+                  color: "black",
                 }}
               >
                 birr
@@ -215,7 +262,17 @@ export default function MenuDetail({ data: data2 }: any) {
             </Typography>
           </Box>
 
-          <Button sx={{ alignSelf: "flex-start" }} onClick={handleOrder}>
+          <Button
+            sx={{
+              alignSelf: "flex-start",
+              backgroundColor: "#e57b0f",
+              color: "white",
+              fontWeight: "bold",
+              width: "100%",
+              fontSize: 30,
+            }}
+            onClick={handleOrder}
+          >
             {isPending ? "ordering" : "order"}
           </Button>
         </Box>
@@ -226,12 +283,17 @@ export default function MenuDetail({ data: data2 }: any) {
         sx={{
           display: "flex",
           flexDirection: "column",
+          marginTop: { xs: 20, sm: 30, md: 30, lg: 0 },
           gap: 2,
-          backgroundColor: "red",
+          backgroundColor: "#fff8f1",
           paddingX: { xs: 2, sm: 4, md: 6, lg: 10, xl: 12 },
         }}
       >
-        <Typography>Related</Typography>
+        <Typography
+          sx={{ fontSize: 40, fontWeight: "regular", color: "#7f7c78" }}
+        >
+          Related
+        </Typography>
         <Box
           sx={{
             display: "flex",

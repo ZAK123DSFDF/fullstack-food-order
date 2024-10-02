@@ -59,6 +59,11 @@ export class AuthService {
   }
   async createServant(resId: number, userData: any): Promise<any> {
     try {
+      const userDataParsed = {
+        ...userData,
+        servantRoleId: parseInt(userData.servantRoleId, 10),
+      };
+      console.log(userDataParsed);
       const SignupSchema = z.object({
         name: z.string().min(1, 'Name is required'),
         email: z.string().email('Invalid email address'),
@@ -67,7 +72,7 @@ export class AuthService {
         phoneNumber: z.string(),
         servantRoleId: z.number(),
       });
-      const parsed = SignupSchema.safeParse(userData);
+      const parsed = SignupSchema.safeParse(userDataParsed);
       if (!parsed.success) {
         throw new BadRequestException(parsed.error.errors);
       }
@@ -196,7 +201,19 @@ export class AuthService {
       throw error;
     }
   }
-  async getAllServants(restaurantId: number): Promise<any[]> {
+  async getAllServants(
+    restaurantId: number,
+    filters: {
+      globalSearch?: string;
+      name?: string;
+      phoneNumber?: string;
+      email?: string;
+      location?: string;
+      active?: string;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+    },
+  ): Promise<any[]> {
     try {
       const restaurant = await this.prisma.restaurant.findUnique({
         where: { id: restaurantId },
@@ -205,12 +222,56 @@ export class AuthService {
       if (!restaurant) {
         throw new NotFoundException('Restaurant not found');
       }
+
+      const {
+        globalSearch,
+        name,
+        phoneNumber,
+        email,
+        location,
+        active,
+        sortBy,
+        sortOrder = 'asc',
+      } = filters;
+      const whereCondition: any = {
+        role: 'SERVANT',
+        restaurantId,
+      };
+      if (globalSearch) {
+        whereCondition.OR = [
+          { name: { contains: globalSearch, mode: 'insensitive' } },
+          { phoneNumber: { contains: globalSearch, mode: 'insensitive' } },
+          { email: { contains: globalSearch, mode: 'insensitive' } },
+          { location: { contains: globalSearch, mode: 'insensitive' } },
+        ];
+      }
+      if (name) {
+        whereCondition.name = { contains: name, mode: 'insensitive' };
+      }
+      if (phoneNumber) {
+        whereCondition.phoneNumber = {
+          contains: phoneNumber,
+          mode: 'insensitive',
+        };
+      }
+      if (email) {
+        whereCondition.email = { contains: email, mode: 'insensitive' };
+      }
+      if (location) {
+        whereCondition.location = { contains: location, mode: 'insensitive' };
+      }
+      if (active !== undefined) {
+        whereCondition.active = active === 'true';
+      }
+      const orderBy = {};
+      if (sortBy) {
+        orderBy[sortBy] = sortOrder;
+      }
       const servants = await this.prisma.user.findMany({
-        where: {
-          role: 'SERVANT',
-          restaurantId,
-        },
+        where: whereCondition,
+        orderBy: sortBy ? orderBy : undefined,
       });
+
       return servants;
     } catch (error) {
       console.log(error);

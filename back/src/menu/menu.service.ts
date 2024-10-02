@@ -72,6 +72,7 @@ export class MenuService {
             not: menuId,
           },
         },
+        include: { restaurant: true },
       });
 
       return menus;

@@ -15,60 +15,116 @@ import {
   Switch,
   IconButton,
 } from "@mui/material";
-import { useMemo, useState } from "react";
-import { MaterialReactTable } from "material-react-table";
+import { useContext, useEffect, useMemo, useState } from "react";
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
 import DeleteIcon from "@mui/icons-material/Delete";
 import BreadCrumbs from "./BreadCrumbs";
+import { useForm, Controller } from "react-hook-form";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getAllServants } from "../actions/user/getAllServants";
+import { activateServant } from "../actions/user/activateServant";
+import { deactivateServant } from "../actions/user/deactivateServant";
+import { deleteServant } from "../actions/user/deleteServant";
+import { getAllActiveRoles } from "../actions/role/getAllActiveRoles";
+import { createServant } from "../actions/user/createServant";
+import useLocalStorage from "@/utils/useLocalStorage";
 
 export default function Users() {
-  const [users, setUsers] = useState([
-    {
-      name: "John Doe",
-      phoneNumber: "555-1234",
-      email: "john@example.com",
-      active: true,
-      role: "Admin",
-    },
-    {
-      name: "Jane Smith",
-      phoneNumber: "555-5678",
-      email: "jane@example.com",
-      active: false,
-      role: "Editor",
-    },
-  ]);
-
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newUser, setNewUser] = useState({
-    name: "",
-    email: "",
-    password: "",
-    phoneNumber: "",
-    role: "",
+  const [userData, setUserData] = useState(null);
+
+  const {
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    formState: { errors },
+    trigger,
+  } = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      phoneNumber: "",
+      role: "",
+      location: "",
+    },
   });
 
-  const handleToggleActive = (index) => {
-    const updatedUsers = users.map((user, idx) =>
-      idx === index ? { ...user, active: !user.active } : user
-    );
-    setUsers(updatedUsers);
-  };
-
   const handleDialogOpen = () => setDialogOpen(true);
-  const handleDialogClose = () => setDialogOpen(false);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewUser((prevUser) => ({
-      ...prevUser,
-      [name]: value,
-    }));
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    reset();
   };
-
-  const handleAddUser = () => {
-    setUsers((prevUsers) => [...prevUsers, newUser]);
-    handleDialogClose();
+  const { data } = useQuery({
+    queryKey: ["allServants"],
+    queryFn: () => getAllServants(),
+  });
+  useEffect(() => {
+    console.log(data);
+  }, [data]);
+  const { mutate: addUser } = useMutation({
+    mutationFn: createServant,
+    onSuccess: (data) => {
+      console.log(data);
+    },
+  });
+  const { mutate: activate } = useMutation({
+    mutationFn: activateServant,
+    onSuccess: (data) => {
+      console.log(data);
+    },
+  });
+  const { data: data1 } = useQuery({
+    queryKey: ["activeRoles"],
+    queryFn: () => getAllActiveRoles(),
+    enabled: dialogOpen,
+  });
+  useEffect(() => {
+    console.log(data1);
+  }, [data1]);
+  const { mutate: deactivate } = useMutation({
+    mutationFn: deactivateServant,
+    onSuccess: (data) => {
+      console.log(data);
+    },
+  });
+  const { mutate: deleteServant1 } = useMutation({
+    mutationFn: deleteServant,
+    onSuccess: (data) => {
+      console.log(data);
+    },
+  });
+  const onSubmit = (data) => {
+    addUser({
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      phoneNumber: data.phoneNumber,
+      location: data.location,
+      servantRoleId: data.role,
+    });
   };
+  const handleClick = (id: any, status: any) => {
+    if (status) {
+      deactivate(id);
+    } else {
+      activate(id);
+    }
+  };
+  const handleDelete = (id: any) => {
+    deleteServant1(id);
+  };
+  const {
+    hasPermissionToViewUsers,
+    hasPermissionToDeleteUser,
+    hasPermissionToAddUser,
+    hasPermissionToUpdateUser,
+  } = useLocalStorage();
 
   const columns = useMemo(
     () => [
@@ -85,6 +141,10 @@ export default function Users() {
         header: "Email",
       },
       {
+        accessorKey: "location",
+        header: "Location",
+      },
+      {
         accessorKey: "actions",
         header: "Actions",
         Cell: ({ row }) => (
@@ -99,26 +159,62 @@ export default function Users() {
                 display: "flex",
                 alignItems: "center",
                 borderRadius: "50px",
+                opacity: !hasPermissionToUpdateUser ? 0.5 : 1,
               }}
             >
               <Switch
                 checked={row.original.active}
-                onChange={() => handleToggleActive(row.index)}
                 name="activeToggle"
+                onClick={() =>
+                  hasPermissionToUpdateUser &&
+                  handleClick(row.original.id, row.original.active)
+                }
+                disabled={!hasPermissionToUpdateUser}
               />
               <Typography sx={{ mr: 2 }}>
                 {row.original.active ? "Active" : "Inactive"}
               </Typography>
             </Box>
-            <IconButton onClick={() => console.log("Delete action")}>
+            <IconButton
+              onClick={() => handleDelete(row.original.id)}
+              disabled={!hasPermissionToDeleteUser}
+              sx={{
+                color: !hasPermissionToDeleteUser ? "gray" : "inherit",
+                cursor: !hasPermissionToDeleteUser ? "not-allowed" : "pointer",
+              }}
+            >
               <DeleteIcon />
             </IconButton>
           </Box>
         ),
       },
     ],
-    [users]
+    [hasPermissionToDeleteUser, hasPermissionToUpdateUser]
   );
+
+  const table = useMaterialReactTable({
+    columns,
+    data: data || [],
+
+    renderTopToolbarCustomActions: () => (
+      <Box sx={{ padding: 2, textAlign: "center" }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleDialogOpen}
+          disabled={!hasPermissionToAddUser}
+          sx={{
+            backgroundColor: !hasPermissionToAddUser ? "gray" : "primary.main",
+            cursor: !hasPermissionToAddUser ? "not-allowed" : "pointer",
+          }}
+        >
+          Add New User
+        </Button>
+      </Box>
+    ),
+  });
+
+  const watchPassword = watch("password");
 
   return (
     <Box sx={{ width: "100%", height: "100%", overflow: "hidden" }}>
@@ -142,21 +238,11 @@ export default function Users() {
             padding: 2,
           }}
         >
-          <MaterialReactTable
-            columns={columns}
-            data={users}
-            renderTopToolbarCustomActions={() => (
-              <Box sx={{ padding: 2, textAlign: "center" }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleDialogOpen}
-                >
-                  Add New User
-                </Button>
-              </Box>
-            )}
-          />
+          {hasPermissionToViewUsers ? (
+            <MaterialReactTable table={table} />
+          ) : (
+            "you dont have permission to see this page"
+          )}
         </Box>
       </Box>
 
@@ -169,48 +255,148 @@ export default function Users() {
       >
         <DialogTitle>Add New User</DialogTitle>
         <DialogContent>
-          <Box display="flex" flexDirection="column" gap={2}>
-            <TextField
-              label="Name"
+          <Box
+            id="userForm"
+            component="form"
+            display="flex"
+            flexDirection="column"
+            gap={2}
+            onSubmit={handleSubmit(onSubmit)}
+          >
+            <Controller
               name="name"
-              value={newUser.name}
-              onChange={handleInputChange}
-              fullWidth
+              control={control}
+              rules={{ required: "Name is required" }}
+              render={({ field }) => (
+                <TextField
+                  label="Name"
+                  fullWidth
+                  {...field}
+                  onBlur={() => trigger("name")}
+                  error={!!errors.name}
+                  helperText={errors.name?.message}
+                />
+              )}
             />
-            <TextField
-              label="Email"
+            <Controller
               name="email"
-              value={newUser.email}
-              onChange={handleInputChange}
-              fullWidth
+              control={control}
+              rules={{
+                required: "Email is required",
+                pattern: {
+                  value: /^[^@ ]+@[^@ ]+\.[^@ .]{2,}$/,
+                  message: "Invalid email address",
+                },
+              }}
+              render={({ field }) => (
+                <TextField
+                  label="Email"
+                  fullWidth
+                  {...field}
+                  onBlur={() => trigger("email")}
+                  error={!!errors.email}
+                  helperText={errors.email?.message}
+                />
+              )}
             />
-            <TextField
-              label="Password"
-              type="password"
+            <Controller
               name="password"
-              value={newUser.password}
-              onChange={handleInputChange}
-              fullWidth
+              control={control}
+              rules={{
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters long",
+                },
+              }}
+              render={({ field }) => (
+                <TextField
+                  label="Password"
+                  type="password"
+                  fullWidth
+                  {...field}
+                  onBlur={() => trigger("password")}
+                  error={!!errors.password}
+                  helperText={errors.password?.message}
+                />
+              )}
             />
-            <TextField
-              label="Phone Number"
+            <Controller
+              name="confirmPassword"
+              control={control}
+              rules={{
+                required: "Confirm Password is required",
+                validate: (value) =>
+                  value === watchPassword || "Passwords do not match",
+              }}
+              render={({ field }) => (
+                <TextField
+                  label="Confirm Password"
+                  type="password"
+                  fullWidth
+                  {...field}
+                  onBlur={() => trigger("confirmPassword")}
+                  error={!!errors.confirmPassword}
+                  helperText={errors.confirmPassword?.message}
+                />
+              )}
+            />
+            <Controller
               name="phoneNumber"
-              value={newUser.phoneNumber}
-              onChange={handleInputChange}
-              fullWidth
+              control={control}
+              rules={{ required: "Phone Number is required" }}
+              render={({ field }) => (
+                <TextField
+                  label="Phone Number"
+                  fullWidth
+                  {...field}
+                  onBlur={() => trigger("phoneNumber")}
+                  error={!!errors.phoneNumber}
+                  helperText={errors.phoneNumber?.message}
+                />
+              )}
             />
-            <FormControl fullWidth>
+            <Controller
+              name="location"
+              control={control}
+              rules={{ required: "Location is required" }}
+              render={({ field }) => (
+                <TextField
+                  label="Location"
+                  fullWidth
+                  {...field}
+                  onBlur={() => trigger("location")}
+                  error={!!errors.location}
+                  helperText={errors.location?.message}
+                />
+              )}
+            />
+            <FormControl fullWidth error={!!errors.role}>
               <InputLabel id="role-select-label">Role</InputLabel>
-              <Select
-                labelId="role-select-label"
+              <Controller
                 name="role"
-                value={newUser.role}
-                onChange={handleInputChange}
-              >
-                <MenuItem value="Admin">Admin</MenuItem>
-                <MenuItem value="Editor">Editor</MenuItem>
-                <MenuItem value="Viewer">Viewer</MenuItem>
-              </Select>
+                control={control}
+                rules={{ required: "Role is required" }}
+                render={({ field }) => (
+                  <Select
+                    labelId="role-select-label"
+                    fullWidth
+                    {...field}
+                    onBlur={() => trigger("role")}
+                  >
+                    {data1?.map((role) => (
+                      <MenuItem key={role.id} value={role.id}>
+                        {role.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                )}
+              />
+              {errors.role && (
+                <Typography variant="body2" color="error">
+                  {errors.role.message}
+                </Typography>
+              )}
             </FormControl>
           </Box>
         </DialogContent>
@@ -218,7 +404,12 @@ export default function Users() {
           <Button onClick={handleDialogClose} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleAddUser} color="primary" variant="contained">
+          <Button
+            type="submit"
+            form="userForm"
+            color="primary"
+            variant="contained"
+          >
             Add User
           </Button>
         </DialogActions>

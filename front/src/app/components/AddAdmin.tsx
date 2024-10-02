@@ -1,9 +1,18 @@
 "use client";
-import { Box, Button, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
-import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { addAdmin } from "../actions/restaurant/addAdmin";
+import { useState } from "react";
 
 export default function Signup() {
   const {
@@ -23,13 +32,14 @@ export default function Signup() {
     },
     mode: "onBlur",
   });
-
+  const [openDialog, setOpenDialog] = useState(false);
   const password = watch("password");
   const { mutate, isPending } = useMutation({
     mutationFn: addAdmin,
     onSuccess: (data) => {
       console.log(data);
       reset();
+      setOpenDialog(true);
     },
   });
   const onSubmit = (data) => {
@@ -42,6 +52,9 @@ export default function Signup() {
     });
   };
 
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
   return (
     <Box
       sx={{
@@ -228,6 +241,17 @@ export default function Signup() {
           </Box>
         </Box>
       </Box>
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>admin created</DialogTitle>
+        <DialogContent>
+          <Typography>admin created successfully!!</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

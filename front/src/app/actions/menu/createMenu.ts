@@ -7,7 +7,6 @@ export const createMenu = async (formData: any) => {
       method: "POST",
       cache: "no-store",
       headers: {
-        "Content-Type": "application/json",
         Cookie: cookies().toString(),
       },
       body: formData,

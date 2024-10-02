@@ -1,6 +1,6 @@
 "use server";
 import { cookies } from "next/headers";
-export const deactivateServant = async (id: any) => {
+export const deleteServant = async (id: any) => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/auth/delete/${id}`,
     {

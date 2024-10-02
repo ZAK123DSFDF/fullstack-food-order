@@ -30,6 +30,7 @@ import { updateRole } from "../actions/role/updateRole";
 import { activateRole } from "../actions/role/activateRole";
 import { deactivateRole } from "../actions/role/deactivateRole";
 import { deleteRole } from "../actions/role/deleteRole";
+import useLocalStorage from "@/utils/useLocalStorage";
 
 export default function RoleManagement() {
   const [dialogData, setDialogData] = useState(null);
@@ -84,7 +85,6 @@ export default function RoleManagement() {
     mutate({ name: newRole.roleName, allowedActions: selectedPermissions });
     setOpenAddDialog(false);
   };
-
   const { data } = useQuery({
     queryKey: ["allRoles"],
     queryFn: () => getAllRoles(),
@@ -165,6 +165,12 @@ export default function RoleManagement() {
   useEffect(() => {
     console.log(data1);
   }, [data1]);
+  const {
+    hasPermissionToAddRole,
+    hasPermissionToDeleteRole,
+    hasPermissionToGetRoles,
+    hasPermissionToUpdateRole,
+  } = useLocalStorage();
 
   const columns = useMemo(
     () => [
@@ -199,7 +205,9 @@ export default function RoleManagement() {
                 onClick={() =>
                   handleToggle(row.original.id, row.original.active)
                 }
+                disabled={!hasPermissionToUpdateRole}
               />
+
               <Typography sx={{ mr: 2 }}>
                 {row.original.active ? "Active" : "Inactive"}
               </Typography>
@@ -211,17 +219,21 @@ export default function RoleManagement() {
                 setIsEditing(true);
                 setRoleId(row.original.id);
               }}
+              disabled={!hasPermissionToUpdateRole}
             >
               <VisibilityIcon />
             </IconButton>
-            <IconButton onClick={() => handleDelete(row.original.id)}>
+            <IconButton
+              onClick={() => handleDelete(row.original.id)}
+              disabled={!hasPermissionToDeleteRole}
+            >
               <DeleteIcon />
             </IconButton>
           </Box>
         ),
       },
     ],
-    []
+    [hasPermissionToUpdateRole, hasPermissionToDeleteRole]
   );
 
   const table = useMaterialReactTable({
@@ -232,6 +244,7 @@ export default function RoleManagement() {
         onClick={() => setOpenAddDialog(true)}
         variant="contained"
         color="primary"
+        disabled={!hasPermissionToAddRole}
       >
         Add New Role
       </Button>
@@ -245,7 +258,7 @@ export default function RoleManagement() {
         sx={{
           width: "100%",
           height: "100%",
-          backgroundColor: "lightblue",
+          backgroundColor: "#f8f8f8",
           padding: 2,
         }}
       >
@@ -260,7 +273,11 @@ export default function RoleManagement() {
             padding: 2,
           }}
         >
-          <MaterialReactTable table={table} />
+          {hasPermissionToGetRoles ? (
+            <MaterialReactTable table={table} />
+          ) : (
+            "you dont have permission to see this"
+          )}
         </Box>
       </Box>
       <DialogCom

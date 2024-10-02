@@ -1,5 +1,14 @@
 "use client";
-import { Box, Button, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Typography,
+} from "@mui/material";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
@@ -31,15 +40,18 @@ export default function Signup() {
   });
 
   const password = watch("password");
-
+  const [openDialog, setOpenDialog] = useState(false);
   const { mutate, isPending, isError, error } = useMutation({
     mutationFn: createRestaurant,
     onSuccess: (data) => {
       console.log(data);
       resetForm();
+      setOpenDialog(true);
     },
   });
-
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
   const onSubmit = (data) => {
     const formData = new FormData();
     formData.append("name", data.name);
@@ -343,14 +355,21 @@ export default function Signup() {
             justifyContent: "center",
             paddingTop: "1rem",
           }}
-        >
-          <Link href="/login" passHref>
-            <Typography variant="body2">
-              Already have an account? Login
-            </Typography>
-          </Link>
-        </Box>
+        ></Box>
       </Box>
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Restaurant Created</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Your restaurant has been successfully created!
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

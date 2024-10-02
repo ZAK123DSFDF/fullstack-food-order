@@ -1,6 +1,13 @@
 "use server";
 import { cookies } from "next/headers";
-export const createServant = async (servantData: any) => {
+export const createServant = async ({
+  name,
+  email,
+  password,
+  phoneNumber,
+  location,
+  servantRoleId,
+}: any) => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/auth/createServant`,
     {
@@ -10,7 +17,14 @@ export const createServant = async (servantData: any) => {
         "Content-Type": "application/json",
         Cookie: cookies().toString(),
       },
-      body: JSON.stringify(servantData),
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+        phoneNumber,
+        location,
+        servantRoleId,
+      }),
     }
   );
   if (!response.ok) {

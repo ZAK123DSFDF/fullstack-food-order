@@ -1,5 +1,6 @@
 "use client";
 import { Box, Typography } from "@mui/material";
+import { useMutation } from "@tanstack/react-query";
 import {
   CalendarArrowUp,
   LogOut,
@@ -11,6 +12,8 @@ import {
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { getLogout } from "../actions/user/getLogout";
+import Image from "next/image";
 
 export default function Sidebar() {
   const pathName = usePathname();
@@ -23,14 +26,25 @@ export default function Sidebar() {
   const handleNavigation = (route: any) => {
     router.push(route);
   };
+  const { mutate } = useMutation({
+    mutationFn: getLogout,
+    onSuccess: () => {
+      localStorage.removeItem("user");
+      window.location.href = "/login";
+    },
+  });
+  const handleLogOut = () => {
+    mutate();
+  };
   return (
     <Box
       sx={{
         display: "flex",
         flexDirection: "column",
-        minWidth: 250,
-        backgroundColor: "red",
+        minWidth: 280,
+        backgroundColor: "#fcfcfc",
         height: "100vh",
+        boxShadow: "4px 0px 8px rgba(186, 155, 155, 1)",
       }}
     >
       <Box
@@ -39,11 +53,11 @@ export default function Sidebar() {
           justifyContent: "space-between",
           width: "100%",
           height: "max-content",
-          padding: 2,
-          backgroundColor: "blue",
+          padding: 3,
+          backgroundColor: "#fcfcfc",
         }}
       >
-        <Typography>PIZZA</Typography>
+        <Typography sx={{ fontSize: 20 }}>PIZZA</Typography>
         <Menu />
       </Box>
       <Box
@@ -52,11 +66,11 @@ export default function Sidebar() {
           justifyContent: "center",
           width: "100%",
           height: "max-content",
-          padding: 10,
-          backgroundColor: "violet",
+          padding: 4,
+          backgroundColor: "#fff8f2",
         }}
       >
-        <Typography>PIZZA</Typography>
+        <Image src="/pizzalogo.svg" width={70} height={70} alt="pizza" />
       </Box>
       <Box
         sx={{
@@ -66,14 +80,15 @@ export default function Sidebar() {
           alignItems: "flex-start",
           paddingY: 2,
           paddingX: 0.3,
-          backgroundColor: "green",
+          backgroundColor: "#fcfcfc",
           position: "relative",
           zIndex: 1,
         }}
       >
         <Box
           sx={{
-            backgroundColor: "blue",
+            backgroundColor: "transparent", // Remove background
+            borderBottom: "1px solid lightgray", // Add 1px soft gray border at the bottom
             width: "90%",
             height: 50,
             marginBottom: 2,
@@ -88,8 +103,9 @@ export default function Sidebar() {
             display: "flex",
             gap: 2,
             width: "100%",
-            backgroundColor: path === "orders" ? "gray" : "transparent",
+            backgroundColor: path === "orders" ? "#ffcd99" : "transparent",
             paddingY: 1,
+            borderRadius: 1,
             cursor: "pointer",
           }}
           onClick={() => handleNavigation("/dashboard/orders")}
@@ -98,14 +114,20 @@ export default function Sidebar() {
             sx={{
               width: "100%",
               height: "100%",
-              backgroundColor: path === "orders" ? "blue" : "transparent",
+              borderLeft: path === "orders" ? "4px solid #ff8100" : "none",
               display: "flex",
               paddingX: 8,
               gap: 1.5,
             }}
           >
-            <CalendarArrowUp />
-            <Typography>Orders</Typography>
+            {path === "orders" ? (
+              <CalendarArrowUp color="#ff8100" />
+            ) : (
+              <CalendarArrowUp />
+            )}
+            <Typography sx={{ color: path === "orders" ? "#ff8100" : "black" }}>
+              Orders
+            </Typography>
           </Box>
         </Box>
         <Box
@@ -113,7 +135,8 @@ export default function Sidebar() {
             display: "flex",
             gap: 2,
             width: "100%",
-            backgroundColor: path === "addMenu" ? "gray" : "transparent",
+            backgroundColor: path === "addMenu" ? "#ffcd99" : "transparent",
+            borderRadius: 1,
             paddingY: 1,
             cursor: "pointer",
           }}
@@ -123,14 +146,18 @@ export default function Sidebar() {
             sx={{
               width: "100%",
               height: "100%",
-              backgroundColor: path === "addMenu" ? "blue" : "transparent",
+              borderLeft: path === "addMenu" ? "4px solid #ff8100" : "none",
               display: "flex",
               paddingX: 8,
               gap: 1.5,
             }}
           >
-            <Pizza />
-            <Typography>Add menu</Typography>
+            {path === "addMenu" ? <Pizza color="#ff8100" /> : <Pizza />}
+            <Typography
+              sx={{ color: path === "addMenu" ? "#ff8100" : "black" }}
+            >
+              Add menu
+            </Typography>
           </Box>
         </Box>
         <Box
@@ -138,8 +165,9 @@ export default function Sidebar() {
             display: "flex",
             gap: 2,
             width: "100%",
-            backgroundColor: path === "roles" ? "gray" : "transparent",
+            backgroundColor: path === "roles" ? "#ffcd99" : "transparent",
             paddingY: 1,
+            borderRadius: 1,
             cursor: "pointer",
           }}
           onClick={() => handleNavigation("/dashboard/roles")}
@@ -148,22 +176,24 @@ export default function Sidebar() {
             sx={{
               width: "100%",
               height: "100%",
-              backgroundColor: path === "roles" ? "blue" : "transparent",
+              borderLeft: path === "roles" ? "4px solid #ff8100" : "none",
               display: "flex",
               paddingX: 8,
               gap: 1.5,
             }}
           >
-            <UsersRound />
-            <Typography>Roles</Typography>
+            {path === "roles" ? <UsersRound color="#ff8100" /> : <UsersRound />}
+            <Typography sx={{ color: path === "roles" ? "#ff8100" : "black" }}>
+              Roles
+            </Typography>
           </Box>
         </Box>
         <Box
           sx={{
             display: "flex",
-
+            borderRadius: 1,
             width: "100%",
-            backgroundColor: path === "users" ? "gray" : "transparent",
+            backgroundColor: path === "users" ? "#ffcd99" : "transparent",
             paddingY: 1,
             cursor: "pointer",
           }}
@@ -173,14 +203,16 @@ export default function Sidebar() {
             sx={{
               width: "100%",
               height: "100%",
-              backgroundColor: path === "users" ? "blue" : "transparent",
               display: "flex",
+              borderLeft: path === "users" ? "4px solid #ff8100" : "none",
               paddingX: 8,
               gap: 1.5,
             }}
           >
-            <User />
-            <Typography>Users</Typography>
+            {path === "users" ? <User color="#ff8100" /> : <User />}
+            <Typography sx={{ color: path === "users" ? "#ff8100" : "black" }}>
+              Users
+            </Typography>
           </Box>
         </Box>
       </Box>
@@ -193,9 +225,10 @@ export default function Sidebar() {
           marginTop: 2,
           cursor: "pointer",
         }}
+        onClick={handleLogOut}
       >
-        <LogOut />
-        <Typography>Logout</Typography>
+        <LogOut size={30} color="red" />
+        <Typography sx={{ fontSize: "20px", color: "red" }}>Logout</Typography>
       </Box>
     </Box>
   );

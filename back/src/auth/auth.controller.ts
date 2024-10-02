@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
   Response,
   UseGuards,
@@ -170,10 +171,33 @@ export class AuthController {
       ability.can(AllowedActions.ALL, All) ||
       ability.can(AllowedActions.GET_USERS, Users),
   )
-  async getAllServants(@Request() req, @Response() res) {
+  async getAllServants(
+    @Request() req,
+    @Response() res,
+    @Query('globalSearch') globalSearch?: string,
+    @Query('name') name?: string,
+    @Query('phoneNumber') phoneNumber?: string,
+    @Query('email') email?: string,
+    @Query('location') location?: string,
+    @Query('active') active?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+  ) {
     try {
       const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
-      const servants = await this.authService.getAllServants(restaurantId);
+
+      // Pass the query parameters to the service
+      const servants = await this.authService.getAllServants(restaurantId, {
+        globalSearch,
+        name,
+        phoneNumber,
+        email,
+        location,
+        active,
+        sortBy,
+        sortOrder,
+      });
+
       res.status(200).json(servants);
     } catch (error) {
       console.log(error);

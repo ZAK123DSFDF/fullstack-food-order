@@ -11,13 +11,15 @@ export default function BreadCrumbs() {
       sx={{
         display: "flex",
         justifyContent: "flex-start",
-        padding: 2,
-        backgroundColor: "green",
+        padding: 3,
+        backgroundColor: "#ffffff",
         height: "max-content",
         width: "100vw",
       }}
     >
-      <Typography>{pathArray[2]}</Typography>
+      <Typography sx={{ fontWeight: "bold", fontSize: 20 }}>
+        {pathArray[2]}
+      </Typography>
     </Box>
   );
 }

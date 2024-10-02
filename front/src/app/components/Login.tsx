@@ -12,6 +12,13 @@ export default function Signup() {
     mutationFn: getLogin,
     onSuccess: (data) => {
       console.log(data);
+      const { password, ...userData } = data.user;
+      localStorage.setItem("user", JSON.stringify(userData));
+      if (data.user.role === "CUSTOMER") {
+        window.location.href = "/";
+      } else if (data.user.role === "SERVANT" || data.user.role === "ADMIN") {
+        window.location.href = "/dashboard/orders";
+      }
     },
   });
   const loginHandle = (e: any) => {
@@ -135,7 +142,7 @@ export default function Signup() {
               fullWidth
               onClick={loginHandle}
             >
-              submit
+              {isPending ? "submitting" : "submit"}
             </Button>
             <Typography sx={{ alignSelf: "center" }}>
               dont Have an account?{" "}

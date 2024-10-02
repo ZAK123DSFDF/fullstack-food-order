@@ -30,6 +30,9 @@ export default function Signup() {
     mutationFn: createUser,
     onSuccess: (data) => {
       console.log(data);
+      const { password, ...userData } = data.user;
+      localStorage.setItem("user", JSON.stringify(userData));
+      window.location.href = "/";
     },
   });
   const onSubmit = async (data: any) => {

@@ -46,8 +46,10 @@ export default function DialogCom({
         roleName: data1.name,
         permissions: updatedPermissions,
       });
-    } else if (!isEditing && !openAddDialog) {
-      // Reset form when not editing or adding
+    }
+
+    // Cleanup function to reset the form when modal closes or component unmounts
+    return () => {
       setNewRole({
         roleName: "",
         permissions: {
@@ -64,8 +66,8 @@ export default function DialogCom({
           GET_USERS: false,
         },
       });
-    }
-  }, [isEditing, openAddDialog, data1, setNewRole]);
+    };
+  }, [isEditing, data1, setNewRole]);
 
   const handleCheck = () => {
     console.log(newRole);
@@ -98,233 +100,229 @@ export default function DialogCom({
       maxWidth="sm"
     >
       <DialogTitle>Add New Role</DialogTitle>
-      {isPending ? (
-        "Loading"
-      ) : (
-        <DialogContent>
-          <TextField
-            label="Role Name"
-            name="roleName"
-            value={newRole.roleName}
-            onChange={(e) => {
-              const { value } = e.target;
-              setNewRole((prev) => ({ ...prev, roleName: value }));
-            }}
-            fullWidth
-            margin="normal"
-          />
-          <Typography sx={{ mt: 2 }}>Permissions:</Typography>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newRole.permissions.SEE_ORDERS}
-                name="SEE_ORDERS"
-                onChange={(e) => {
-                  const { checked } = e.target;
-                  setNewRole((prev) => ({
-                    ...prev,
-                    permissions: {
-                      ...prev.permissions,
-                      SEE_ORDERS: checked,
-                    },
-                  }));
-                }}
-              />
-            }
-            label="See Orders"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newRole.permissions.UPDATE_ORDERS}
-                name="UPDATE_ORDERS"
-                onChange={(e) => {
-                  const { checked } = e.target;
-                  setNewRole((prev) => ({
-                    ...prev,
-                    permissions: {
-                      ...prev.permissions,
-                      UPDATE_ORDERS: checked,
-                    },
-                  }));
-                }}
-              />
-            }
-            label="Update Orders"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newRole.permissions.ADD_MENU}
-                name="ADD_MENU"
-                onChange={(e) => {
-                  const { checked } = e.target;
-                  setNewRole((prev) => ({
-                    ...prev,
-                    permissions: {
-                      ...prev.permissions,
-                      ADD_MENU: checked,
-                    },
-                  }));
-                }}
-              />
-            }
-            label="Add Menu"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newRole.permissions.ADD_ROLE}
-                name="ADD_ROLE"
-                onChange={(e) => {
-                  const { checked } = e.target;
-                  setNewRole((prev) => ({
-                    ...prev,
-                    permissions: {
-                      ...prev.permissions,
-                      ADD_ROLE: checked,
-                    },
-                  }));
-                }}
-              />
-            }
-            label="Add Role"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newRole.permissions.UPDATE_ROLE}
-                name="UPDATE_ROLE"
-                onChange={(e) => {
-                  const { checked } = e.target;
-                  setNewRole((prev) => ({
-                    ...prev,
-                    permissions: {
-                      ...prev.permissions,
-                      UPDATE_ROLE: checked,
-                    },
-                  }));
-                }}
-              />
-            }
-            label="Update Role"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newRole.permissions.DELETE_ROLE}
-                name="DELETE_ROLE"
-                onChange={(e) => {
-                  const { checked } = e.target;
-                  setNewRole((prev) => ({
-                    ...prev,
-                    permissions: {
-                      ...prev.permissions,
-                      DELETE_ROLE: checked,
-                    },
-                  }));
-                }}
-              />
-            }
-            label="Delete Role"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newRole.permissions.GET_ROLES}
-                name="GET_ROLES"
-                onChange={(e) => {
-                  const { checked } = e.target;
-                  setNewRole((prev) => ({
-                    ...prev,
-                    permissions: {
-                      ...prev.permissions,
-                      GET_ROLES: checked,
-                    },
-                  }));
-                }}
-              />
-            }
-            label="Get Roles"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newRole.permissions.ADD_USER}
-                name="ADD_USER"
-                onChange={(e) => {
-                  const { checked } = e.target;
-                  setNewRole((prev) => ({
-                    ...prev,
-                    permissions: {
-                      ...prev.permissions,
-                      ADD_USER: checked,
-                    },
-                  }));
-                }}
-              />
-            }
-            label="Add User"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newRole.permissions.UPDATE_USER}
-                name="UPDATE_USER"
-                onChange={(e) => {
-                  const { checked } = e.target;
-                  setNewRole((prev) => ({
-                    ...prev,
-                    permissions: {
-                      ...prev.permissions,
-                      UPDATE_USER: checked,
-                    },
-                  }));
-                }}
-              />
-            }
-            label="Update User"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newRole.permissions.DELETE_USER}
-                name="DELETE_USER"
-                onChange={(e) => {
-                  const { checked } = e.target;
-                  setNewRole((prev) => ({
-                    ...prev,
-                    permissions: {
-                      ...prev.permissions,
-                      DELETE_USER: checked,
-                    },
-                  }));
-                }}
-              />
-            }
-            label="Delete User"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newRole.permissions.GET_USERS}
-                name="GET_USERS"
-                onChange={(e) => {
-                  const { checked } = e.target;
-                  setNewRole((prev) => ({
-                    ...prev,
-                    permissions: {
-                      ...prev.permissions,
-                      GET_USERS: checked,
-                    },
-                  }));
-                }}
-              />
-            }
-            label="Get Users"
-          />
-        </DialogContent>
-      )}
+      <DialogContent>
+        <TextField
+          label="Role Name"
+          name="roleName"
+          value={newRole.roleName}
+          onChange={(e) => {
+            const { value } = e.target;
+            setNewRole((prev) => ({ ...prev, roleName: value }));
+          }}
+          fullWidth
+          margin="normal"
+        />
+        <Typography sx={{ mt: 2 }}>Permissions:</Typography>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={newRole.permissions.SEE_ORDERS}
+              name="SEE_ORDERS"
+              onChange={(e) => {
+                const { checked } = e.target;
+                setNewRole((prev) => ({
+                  ...prev,
+                  permissions: {
+                    ...prev.permissions,
+                    SEE_ORDERS: checked,
+                  },
+                }));
+              }}
+            />
+          }
+          label="See Orders"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={newRole.permissions.UPDATE_ORDERS}
+              name="UPDATE_ORDERS"
+              onChange={(e) => {
+                const { checked } = e.target;
+                setNewRole((prev) => ({
+                  ...prev,
+                  permissions: {
+                    ...prev.permissions,
+                    UPDATE_ORDERS: checked,
+                  },
+                }));
+              }}
+            />
+          }
+          label="Update Orders"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={newRole.permissions.ADD_MENU}
+              name="ADD_MENU"
+              onChange={(e) => {
+                const { checked } = e.target;
+                setNewRole((prev) => ({
+                  ...prev,
+                  permissions: {
+                    ...prev.permissions,
+                    ADD_MENU: checked,
+                  },
+                }));
+              }}
+            />
+          }
+          label="Add Menu"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={newRole.permissions.ADD_ROLE}
+              name="ADD_ROLE"
+              onChange={(e) => {
+                const { checked } = e.target;
+                setNewRole((prev) => ({
+                  ...prev,
+                  permissions: {
+                    ...prev.permissions,
+                    ADD_ROLE: checked,
+                  },
+                }));
+              }}
+            />
+          }
+          label="Add Role"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={newRole.permissions.UPDATE_ROLE}
+              name="UPDATE_ROLE"
+              onChange={(e) => {
+                const { checked } = e.target;
+                setNewRole((prev) => ({
+                  ...prev,
+                  permissions: {
+                    ...prev.permissions,
+                    UPDATE_ROLE: checked,
+                  },
+                }));
+              }}
+            />
+          }
+          label="Update Role"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={newRole.permissions.DELETE_ROLE}
+              name="DELETE_ROLE"
+              onChange={(e) => {
+                const { checked } = e.target;
+                setNewRole((prev) => ({
+                  ...prev,
+                  permissions: {
+                    ...prev.permissions,
+                    DELETE_ROLE: checked,
+                  },
+                }));
+              }}
+            />
+          }
+          label="Delete Role"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={newRole.permissions.GET_ROLES}
+              name="GET_ROLES"
+              onChange={(e) => {
+                const { checked } = e.target;
+                setNewRole((prev) => ({
+                  ...prev,
+                  permissions: {
+                    ...prev.permissions,
+                    GET_ROLES: checked,
+                  },
+                }));
+              }}
+            />
+          }
+          label="Get Roles"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={newRole.permissions.ADD_USER}
+              name="ADD_USER"
+              onChange={(e) => {
+                const { checked } = e.target;
+                setNewRole((prev) => ({
+                  ...prev,
+                  permissions: {
+                    ...prev.permissions,
+                    ADD_USER: checked,
+                  },
+                }));
+              }}
+            />
+          }
+          label="Add User"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={newRole.permissions.UPDATE_USER}
+              name="UPDATE_USER"
+              onChange={(e) => {
+                const { checked } = e.target;
+                setNewRole((prev) => ({
+                  ...prev,
+                  permissions: {
+                    ...prev.permissions,
+                    UPDATE_USER: checked,
+                  },
+                }));
+              }}
+            />
+          }
+          label="Update User"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={newRole.permissions.DELETE_USER}
+              name="DELETE_USER"
+              onChange={(e) => {
+                const { checked } = e.target;
+                setNewRole((prev) => ({
+                  ...prev,
+                  permissions: {
+                    ...prev.permissions,
+                    DELETE_USER: checked,
+                  },
+                }));
+              }}
+            />
+          }
+          label="Delete User"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={newRole.permissions.GET_USERS}
+              name="GET_USERS"
+              onChange={(e) => {
+                const { checked } = e.target;
+                setNewRole((prev) => ({
+                  ...prev,
+                  permissions: {
+                    ...prev.permissions,
+                    GET_USERS: checked,
+                  },
+                }));
+              }}
+            />
+          }
+          label="Get Users"
+        />
+      </DialogContent>
       <DialogActions>
         <Button
           onClick={() => {

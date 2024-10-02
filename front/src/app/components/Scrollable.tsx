@@ -15,7 +15,7 @@ export default function Scrollable() {
         borderRadius: "10px",
         alignItems: "center",
         gap: 2,
-        flexShrink: 0, // Prevent the Scrollable component from shrinking
+        flexShrink: 0,
       }}
     >
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -44,7 +44,8 @@ export default function Scrollable() {
         <Typography
           sx={{
             maxWidth: 270,
-            wordWrap: "break-word", // Ensure text breaks inside max width
+            wordWrap: "break-word",
+            color: "gray",
           }}
         >
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
@@ -54,28 +55,28 @@ export default function Scrollable() {
       <Box
         sx={{
           display: "flex",
-          backgroundColor: "red",
+          backgroundColor: "#f2f9f2",
           borderRadius: "10px",
           overflow: "hidden",
           padding: 2,
           width: "max-content",
           height: "max-content",
           gap: 2,
-          flexShrink: 0, // Prevent the red box from shrinking
+          flexShrink: 0,
         }}
       >
         <Box
           sx={{
             minWidth: 70,
             minHeight: 70,
-            backgroundColor: "green",
+            backgroundColor: "#f5e1c2",
             borderRadius: "50%",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
           }}
         >
-          <Shield size={50} />
+          <Shield size={50} color="#ff8100" />
         </Box>
         <Box
           sx={{
@@ -85,8 +86,14 @@ export default function Scrollable() {
             justifyContent: "center",
           }}
         >
-          <Typography>Number of Orders</Typography>
-          <Typography>20k+</Typography>
+          <Typography sx={{ fontSize: 15, color: "gray" }}>
+            Number of Orders
+          </Typography>
+          <Typography
+            sx={{ fontSize: 30, fontWeight: "bold", color: "#ff8100" }}
+          >
+            20k+
+          </Typography>
         </Box>
       </Box>
     </Box>
