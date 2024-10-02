@@ -309,7 +309,7 @@ export default function MenuDetail({ data: data2 }: any) {
 
       {/* Success Modal */}
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>You've ordered the product successfully!</DialogTitle>
+        <DialogTitle>You&#39;ve ordered the product successfully!</DialogTitle>
         <Box sx={{ padding: 2 }}>
           <Button variant="contained" onClick={handleClose}>
             Close
