@@ -52,7 +52,7 @@ export default function Signup() {
   const handleCloseDialog = () => {
     setOpenDialog(false);
   };
-  const onSubmit = (data) => {
+  const onSubmit = (data: any) => {
     const formData = new FormData();
     formData.append("name", data.name);
     formData.append("email", data.email);
@@ -66,7 +66,7 @@ export default function Signup() {
     mutate(formData);
   };
 
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState<any>(null);
   const [isClient, setIsClient] = useState(false); // To check if client-side rendering has occurred
 
   // Set `isClient` to true only on the client
@@ -74,7 +74,7 @@ export default function Signup() {
     setIsClient(true);
   }, []);
 
-  const onDrop = (acceptedFiles) => {
+  const onDrop = (acceptedFiles: any) => {
     if (acceptedFiles.length > 0) {
       const newFile = acceptedFiles[0];
       setFile(

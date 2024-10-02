@@ -39,7 +39,7 @@ export default function AddMenu() {
   const [uploadedImages, setUploadedImages] = useState([]);
   const { hasPermissionToAddMenu } = useLocalStorage();
 
-  const handleToggleTopping = (index) => {
+  const handleToggleTopping = (index: any) => {
     const updatedToppings = toppings.map((topping, i) =>
       i === index ? { ...topping, selected: !topping.selected } : topping
     );
@@ -53,6 +53,7 @@ export default function AddMenu() {
   };
 
   const { getRootProps, getInputProps } = useDropzone({
+    //@ts-ignore
     accept: "image/*",
     onDrop: (acceptedFiles) => {
       const filesWithPreview = acceptedFiles.map((file) =>
@@ -60,6 +61,7 @@ export default function AddMenu() {
           preview: URL.createObjectURL(file),
         })
       );
+      //@ts-ignore
       setUploadedImages([...uploadedImages, ...filesWithPreview]);
     },
   });
@@ -74,7 +76,7 @@ export default function AddMenu() {
     },
   });
 
-  const handleUpload = (e) => {
+  const handleUpload = (e: any) => {
     e.preventDefault();
     const filteredToppings = toppings
       .filter((topping) => topping.selected !== false)
@@ -105,7 +107,7 @@ export default function AddMenu() {
     mutate(formData);
   };
 
-  const handleDeleteImage = (index) => {
+  const handleDeleteImage = (index: any) => {
     setUploadedImages(uploadedImages.filter((_, i) => i !== index));
   };
 
@@ -220,7 +222,7 @@ export default function AddMenu() {
 
                 {/* Display Uploaded Images */}
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-                  {uploadedImages.map((file, index) => (
+                  {uploadedImages.map((file: any, index: any) => (
                     <Box
                       key={index}
                       sx={{

@@ -99,7 +99,7 @@ export default function Users() {
       console.log(data);
     },
   });
-  const onSubmit = (data) => {
+  const onSubmit = (data: any) => {
     addUser({
       name: data.name,
       email: data.email,
@@ -147,7 +147,7 @@ export default function Users() {
       {
         accessorKey: "actions",
         header: "Actions",
-        Cell: ({ row }) => (
+        Cell: ({ row }: any) => (
           <Box display="flex" alignItems="center">
             <Box
               sx={{
@@ -384,7 +384,7 @@ export default function Users() {
                     {...field}
                     onBlur={() => trigger("role")}
                   >
-                    {data1?.map((role) => (
+                    {data1?.map((role: any) => (
                       <MenuItem key={role.id} value={role.id}>
                         {role.name}
                       </MenuItem>

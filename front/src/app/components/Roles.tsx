@@ -185,7 +185,7 @@ export default function RoleManagement() {
       {
         accessorKey: "active",
         header: "Actions",
-        Cell: ({ row }) => (
+        Cell: ({ row }: any) => (
           <Box display="flex" alignItems="center">
             <Box
               sx={{

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 export default function useLocalStorage() {
   const [init, setInit] = useState(false);
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState<any>(null);
   useEffect(() => {
     setInit(true);
   }, []);

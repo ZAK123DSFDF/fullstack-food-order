@@ -107,7 +107,7 @@ export default function DialogCom({
           value={newRole.roleName}
           onChange={(e) => {
             const { value } = e.target;
-            setNewRole((prev) => ({ ...prev, roleName: value }));
+            setNewRole((prev: any) => ({ ...prev, roleName: value }));
           }}
           fullWidth
           margin="normal"
@@ -120,7 +120,7 @@ export default function DialogCom({
               name="SEE_ORDERS"
               onChange={(e) => {
                 const { checked } = e.target;
-                setNewRole((prev) => ({
+                setNewRole((prev: any) => ({
                   ...prev,
                   permissions: {
                     ...prev.permissions,
@@ -139,7 +139,7 @@ export default function DialogCom({
               name="UPDATE_ORDERS"
               onChange={(e) => {
                 const { checked } = e.target;
-                setNewRole((prev) => ({
+                setNewRole((prev: any) => ({
                   ...prev,
                   permissions: {
                     ...prev.permissions,
@@ -158,7 +158,7 @@ export default function DialogCom({
               name="ADD_MENU"
               onChange={(e) => {
                 const { checked } = e.target;
-                setNewRole((prev) => ({
+                setNewRole((prev: any) => ({
                   ...prev,
                   permissions: {
                     ...prev.permissions,
@@ -177,7 +177,7 @@ export default function DialogCom({
               name="ADD_ROLE"
               onChange={(e) => {
                 const { checked } = e.target;
-                setNewRole((prev) => ({
+                setNewRole((prev: any) => ({
                   ...prev,
                   permissions: {
                     ...prev.permissions,
@@ -196,7 +196,7 @@ export default function DialogCom({
               name="UPDATE_ROLE"
               onChange={(e) => {
                 const { checked } = e.target;
-                setNewRole((prev) => ({
+                setNewRole((prev: any) => ({
                   ...prev,
                   permissions: {
                     ...prev.permissions,
@@ -215,7 +215,7 @@ export default function DialogCom({
               name="DELETE_ROLE"
               onChange={(e) => {
                 const { checked } = e.target;
-                setNewRole((prev) => ({
+                setNewRole((prev: any) => ({
                   ...prev,
                   permissions: {
                     ...prev.permissions,
@@ -234,7 +234,7 @@ export default function DialogCom({
               name="GET_ROLES"
               onChange={(e) => {
                 const { checked } = e.target;
-                setNewRole((prev) => ({
+                setNewRole((prev: any) => ({
                   ...prev,
                   permissions: {
                     ...prev.permissions,
@@ -253,7 +253,7 @@ export default function DialogCom({
               name="ADD_USER"
               onChange={(e) => {
                 const { checked } = e.target;
-                setNewRole((prev) => ({
+                setNewRole((prev: any) => ({
                   ...prev,
                   permissions: {
                     ...prev.permissions,
@@ -272,7 +272,7 @@ export default function DialogCom({
               name="UPDATE_USER"
               onChange={(e) => {
                 const { checked } = e.target;
-                setNewRole((prev) => ({
+                setNewRole((prev: any) => ({
                   ...prev,
                   permissions: {
                     ...prev.permissions,
@@ -291,7 +291,7 @@ export default function DialogCom({
               name="DELETE_USER"
               onChange={(e) => {
                 const { checked } = e.target;
-                setNewRole((prev) => ({
+                setNewRole((prev: any) => ({
                   ...prev,
                   permissions: {
                     ...prev.permissions,
@@ -310,7 +310,7 @@ export default function DialogCom({
               name="GET_USERS"
               onChange={(e) => {
                 const { checked } = e.target;
-                setNewRole((prev) => ({
+                setNewRole((prev: any) => ({
                   ...prev,
                   permissions: {
                     ...prev.permissions,

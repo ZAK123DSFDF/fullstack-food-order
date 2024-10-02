@@ -54,7 +54,7 @@ export default function MenuDetail({ data: data2 }: any) {
   });
   const handleOrder = () => {
     const selectedToppings = data.toppings?.filter(
-      (_, index) => checkedToppings[index]
+      (_: any, index: any) => checkedToppings[index]
     );
     mutate({ menuId: params.id, count, toppings: selectedToppings });
   };
@@ -130,7 +130,7 @@ export default function MenuDetail({ data: data2 }: any) {
               maxWidth: { xs: "100%", md: "200px" },
             }}
           >
-            {data?.Picture.map((img, index) => (
+            {data?.Picture.map((img: any, index: any) => (
               <Box
                 key={index}
                 sx={{
@@ -180,7 +180,7 @@ export default function MenuDetail({ data: data2 }: any) {
               width: "100%",
             }}
           >
-            {data?.toppings?.map((topping, index) => (
+            {data?.toppings?.map((topping: any, index: any) => (
               <FormControlLabel
                 key={index}
                 control={

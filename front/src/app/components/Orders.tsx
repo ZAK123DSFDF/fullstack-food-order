@@ -26,7 +26,7 @@ import { updateOrder } from "../actions/order/updateOrder";
 import useLocalStorage from "@/utils/useLocalStorage";
 
 export default function Orders() {
-  const [dialogData, setDialogData] = useState(null);
+  const [dialogData, setDialogData] = useState<any>(null);
   const { hasPermissionToViewOrders, hasPermissionToUpdateOrders } =
     useLocalStorage();
   const { data: data1 } = useQuery({
@@ -52,7 +52,7 @@ export default function Orders() {
     if (data1) {
       setOrderData(data1);
       console.log(orderData);
-      setStatus(data1.map((order) => order.orderStatus || "PREPARING"));
+      setStatus(data1.map((order: any) => order.orderStatus || "PREPARING"));
     }
   }, [data1, orderData]);
   useEffect(() => {
@@ -132,7 +132,7 @@ export default function Orders() {
                 <Select
                   value={status[rowIndex] || row.original.orderStatus}
                   onChange={(e) => {
-                    const updatedStatus = [...status];
+                    const updatedStatus: any = [...status];
                     updatedStatus[rowIndex] = e.target.value;
                     setStatus(updatedStatus);
                     handleUpdate(row.original.id, updatedStatus[rowIndex]);

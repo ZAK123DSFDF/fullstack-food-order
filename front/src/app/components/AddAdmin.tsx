@@ -42,7 +42,7 @@ export default function Signup() {
       setOpenDialog(true);
     },
   });
-  const onSubmit = (data) => {
+  const onSubmit = (data: any) => {
     mutate({
       name: data.name,
       email: data.email,
