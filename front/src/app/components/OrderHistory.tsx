@@ -52,7 +52,11 @@ export default function OrderHistory() {
           }}
         >
           <Typography
-            sx={{ cursor: "pointer", fontSize: 25, fontWeight: "regular" }}
+            sx={{
+              cursor: "pointer",
+              fontSize: 25,
+              fontWeight: "regular",
+            }}
             onClick={handleHome}
           >
             Home
@@ -61,6 +65,7 @@ export default function OrderHistory() {
             sx={{
               cursor: "pointer",
               fontSize: 25,
+              display: { xs: "none", lg: "flex" },
               fontWeight: "bold",
               color: "#ff8609",
             }}
@@ -68,7 +73,12 @@ export default function OrderHistory() {
             Orders
           </Typography>
           <Typography
-            sx={{ cursor: "pointer", fontSize: 25, fontWeight: "regular" }}
+            sx={{
+              cursor: "pointer",
+              fontSize: 25,
+              display: { xs: "none", lg: "flex" },
+              fontWeight: "regular",
+            }}
           >
             Who we are
           </Typography>

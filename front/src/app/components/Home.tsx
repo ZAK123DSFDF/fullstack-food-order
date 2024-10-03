@@ -14,6 +14,8 @@ import {
 import Scrollable from "./Scrollable";
 import Card from "./Card";
 import { usePathname, useRouter } from "next/navigation";
+import ScrollableData from "./ScrollableData";
+import SwiperComponent from "./Swiper";
 
 export default function Home({ data }: any) {
   const [fontSize, setFontSize] = useState("8rem");
@@ -100,7 +102,7 @@ export default function Home({ data }: any) {
             <Typography
               sx={{
                 cursor: "pointer",
-                fontSize: { xs: 10, md: 25 },
+                fontSize: 25,
                 display: { xs: "none", lg: "flex" },
                 fontWeight: "bold",
                 color: "#ff8609",
@@ -111,7 +113,7 @@ export default function Home({ data }: any) {
             <Typography
               sx={{
                 cursor: "pointer",
-                fontSize: { xs: 10, md: 25 },
+                fontSize: 25,
 
                 fontWeight: "regular",
               }}
@@ -122,7 +124,7 @@ export default function Home({ data }: any) {
             <Typography
               sx={{
                 cursor: "pointer",
-                fontSize: { xs: 10, md: 25 },
+                fontSize: 25,
                 display: { xs: "none", lg: "flex" },
                 fontWeight: "regular",
               }}
@@ -263,88 +265,7 @@ export default function Home({ data }: any) {
         >
           Featured Pizza
         </Typography>
-        <Box
-          sx={{
-            width: "100%",
-            height: 400,
-            backgroundColor: "#50482b",
-            borderRadius: "30px",
-            display: "flex",
-            justifyContent: "space-between",
-            overflow: "hidden",
-            paddingX: { xs: 2, sm: 4, md: 6 },
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-              paddingY: 5,
-              gap: 3,
-              minWidth: { xs: 200, sm: 400, md: 450, lg: 600, xl: 500 },
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: {
-                  xs: "1.5rem",
-                  sm: "2.5rem",
-                  md: "3rem",
-                  lg: "3.5rem",
-                  xl: "4rem",
-                },
-                maxWidth: "800px",
-                lineHeight: {
-                  xs: "1.2",
-                  sm: "1.2",
-                  md: "1.1",
-                  lg: "1.1",
-                  xl: "1",
-                },
-                color: "white",
-                fontWeight: "bold",
-              }}
-            >
-              make you first order and get{" "}
-              <span style={{ color: "#e57b0f", fontWeight: "bold" }}>
-                50% off
-              </span>
-            </Typography>
-            <Typography
-              sx={{
-                color: "white",
-                opacity: 0.8,
-                lineHeight: 1.5,
-              }}
-            >
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec
-              accumsan, dolor ac lacinia viverra, lacus justo laoreet libero
-            </Typography>
-            <Button
-              sx={{
-                fontWeight: "bold",
-                backgroundColor: "#e57b0f",
-                color: "white",
-                fontSize: "1.2rem",
-                padding: "12px 24px",
-                borderRadius: "5px",
-                "&:hover": {
-                  backgroundColor: "#d95c0f",
-                },
-              }}
-            >
-              Order Now
-            </Button>
-          </Box>
-          <Image
-            width={300}
-            height={300}
-            alt="this is feature"
-            src="/pizza.svg"
-            className="size1"
-          />
-        </Box>
+        <SwiperComponent />
       </Box>
       <Box
         sx={{
@@ -546,8 +467,9 @@ export default function Home({ data }: any) {
         </Box>
         <Box
           sx={{
-            display: { xs: "column", md: "row" },
-            gap: 5,
+            flexDirection: "row",
+            display: "flex",
+            gap: { xs: 2, md: 5 },
             justifyContent: "center",
             alignItems: "center",
           }}
