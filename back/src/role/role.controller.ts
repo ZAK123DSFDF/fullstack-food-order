@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
   Response,
   UseGuards,
@@ -173,10 +174,27 @@ export class RoleController {
       ability.can(AllowedActions.ALL, All) ||
       ability.can(AllowedActions.GET_ROLES, Role),
   )
-  async getAllRoles(@Request() req, @Response() res) {
+  async getAllRoles(
+    @Request() req,
+    @Response() res,
+    @Query('globalSearch') globalSearch?: string,
+    @Query('name') name?: string,
+    @Query('createdAt') createdAt?: string,
+    @Query('active') active?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+  ) {
     try {
       const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
-      const roles = await this.roleService.getAllRoles(restaurantId);
+      const roles = await this.roleService.getAllRoles(
+        restaurantId,
+        globalSearch,
+        name,
+        createdAt,
+        active,
+        sortBy,
+        sortOrder,
+      );
       res.status(200).json(roles);
     } catch (error) {
       console.log(error);

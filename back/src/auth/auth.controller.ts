@@ -105,6 +105,7 @@ export class AuthController {
     @Param('userId') userId: number,
   ) {
     try {
+      console.log('this is activate');
       const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
       const result = await this.authService.activateServant(
         restaurantId,
@@ -184,6 +185,7 @@ export class AuthController {
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
   ) {
     try {
+      console.log('incoming data');
       const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
 
       // Pass the query parameters to the service

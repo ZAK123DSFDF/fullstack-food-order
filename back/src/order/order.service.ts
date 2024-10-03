@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
@@ -127,23 +128,143 @@ export class OrderService {
       throw error;
     }
   }
-  async getOrdersByRestaurantId(restaurantId: number): Promise<any> {
+  async getOrdersByRestaurantId(
+    restaurantId: number,
+    globalSearch?: string, // Parameter for global search
+    orderStatus?: string,
+    menuName?: string,
+    count?: number,
+    price?: number,
+    customerName?: string,
+    customerEmail?: string,
+    customerPhoneNumber?: string,
+    customerLocation?: string,
+  ): Promise<any[]> {
     try {
       const restaurantExists = await this.prisma.restaurant.findUnique({
         where: { id: restaurantId },
       });
-
+      console.log(typeof restaurantId);
       if (!restaurantExists) {
         throw new NotFoundException(
           `Restaurant with ID ${restaurantId} not found.`,
         );
       }
-      const orders = await this.prisma.order.findMany({
-        where: {
-          menu: {
-            restaurantId: restaurantId,
-          },
+
+      const whereClause: any = {
+        menu: {
+          restaurantId: restaurantId,
         },
+      };
+      if (globalSearch) {
+        whereClause.OR = [
+          {
+            orderStatus: {
+              contains: globalSearch,
+              mode: 'insensitive',
+            },
+          },
+          {
+            menu: {
+              name: {
+                contains: globalSearch,
+                mode: 'insensitive',
+              },
+            },
+          },
+          {
+            customer: {
+              name: {
+                contains: globalSearch,
+                mode: 'insensitive',
+              },
+            },
+          },
+          {
+            customer: {
+              email: {
+                contains: globalSearch,
+                mode: 'insensitive',
+              },
+            },
+          },
+          {
+            customer: {
+              phoneNumber: {
+                contains: globalSearch,
+                mode: 'insensitive',
+              },
+            },
+          },
+          {
+            customer: {
+              location: {
+                contains: globalSearch,
+                mode: 'insensitive',
+              },
+            },
+          },
+        ];
+      }
+      if (orderStatus) {
+        whereClause.orderStatus = {
+          contains: orderStatus,
+          mode: 'insensitive',
+        };
+      }
+      if (menuName) {
+        whereClause.menu = {
+          name: {
+            contains: menuName,
+            mode: 'insensitive',
+          },
+        };
+      }
+      if (customerName) {
+        whereClause.customer = {
+          name: {
+            contains: customerName,
+            mode: 'insensitive',
+          },
+        };
+      }
+      if (customerEmail) {
+        whereClause.customer = {
+          email: {
+            contains: customerEmail,
+            mode: 'insensitive',
+          },
+        };
+      }
+      if (customerPhoneNumber) {
+        whereClause.customer = {
+          phoneNumber: {
+            contains: customerPhoneNumber,
+            mode: 'insensitive',
+          },
+        };
+      }
+      if (customerLocation) {
+        whereClause.customer = {
+          location: {
+            contains: customerLocation,
+            mode: 'insensitive',
+          },
+        };
+      }
+      if (count !== undefined && !isNaN(Number(count))) {
+        whereClause.count = {
+          equals: Number(count),
+        };
+      }
+      if (price !== undefined && !isNaN(Number(price))) {
+        whereClause.menu.price = {
+          equals: Number(price),
+        };
+      }
+
+      const orders = await this.prisma.order.findMany({
+        where: whereClause,
         include: {
           menu: true,
           customer: true,

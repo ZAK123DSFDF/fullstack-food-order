@@ -1,6 +1,13 @@
 "use server";
 import { cookies } from "next/headers";
-export const getAllRoles = async () => {
+export const getAllRoles = async (
+  globalSearch: any,
+  name: any,
+  createdAt: any,
+  active: any,
+  sortBy: any,
+  sortOrder: any
+) => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/role/restaurant`,
     {

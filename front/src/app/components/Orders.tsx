@@ -17,6 +17,8 @@ import BreadCrumbs from "./BreadCrumbs";
 import { useEffect, useMemo, useState } from "react";
 import {
   MaterialReactTable,
+  MRT_ColumnFiltersState,
+  MRT_SortingState,
   useMaterialReactTable,
 } from "material-react-table";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -24,14 +26,60 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getRestaurantOrders } from "../actions/order/getRestaurantOrders";
 import { updateOrder } from "../actions/order/updateOrder";
 import useLocalStorage from "@/utils/useLocalStorage";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Orders() {
   const [dialogData, setDialogData] = useState<any>(null);
+  const searchParams = useSearchParams();
+  const [hasTyped, setHasTyped] = useState(false);
+  const [globalSearch, setGlobalSearch] = useState("");
+  const [columnFilter, setColumnFilter] = useState<MRT_ColumnFiltersState>([]);
+  const [sorting, setSorting] = useState<MRT_SortingState>([]);
+  const [del, setDel] = useState(false);
+  const router = useRouter();
   const { hasPermissionToViewOrders, hasPermissionToUpdateOrders } =
     useLocalStorage();
-  const { data: data1 } = useQuery({
-    queryKey: ["orders"],
-    queryFn: () => getRestaurantOrders(),
+  const globalSearc = searchParams.get("globalSearch");
+  const menuName = searchParams.get("menuname");
+  const menuPrice = searchParams.get("menuprice");
+  const count = searchParams.get("count");
+  const customerPhoneNumber = searchParams.get("customerphoneNumber");
+  const customerName = searchParams.get("customername");
+  const customerEmail = searchParams.get("customeremail");
+  const customerLocation = searchParams.get("customerLocation");
+  const orderStatus = searchParams.get("orderStatus");
+  const sortBy = searchParams.get("sortBy");
+  const sortOrder = searchParams.get("sortOrder");
+
+  const {
+    data: data1,
+    isPending,
+    isError,
+  } = useQuery({
+    queryKey: [
+      "orders",
+      globalSearc,
+      orderStatus,
+      menuName,
+      count,
+      menuPrice,
+      customerName,
+      customerEmail,
+      customerPhoneNumber,
+      customerLocation,
+    ],
+    queryFn: () =>
+      getRestaurantOrders(
+        globalSearc,
+        orderStatus,
+        menuName,
+        count,
+        menuPrice,
+        customerName,
+        customerEmail,
+        customerPhoneNumber,
+        customerLocation
+      ),
   });
   const [orderData, setOrderData] = useState([]);
   const [status, setStatus] = useState([]);
@@ -58,19 +106,70 @@ export default function Orders() {
   useEffect(() => {
     console.log(status);
   }, [status]);
+  useEffect(() => {
+    if (hasTyped) {
+      const handle = setTimeout(() => {
+        const query = new URLSearchParams();
+        if (globalSearch) {
+          query.set("globalSearch", globalSearch);
+        } else {
+          query.delete("globalSearch");
+          setDel(true);
+          if (del) {
+            router.push(`/dashboard/orders?${query.toString()}`);
+          }
+        }
+        columnFilter.forEach((filter) => {
+          if (filter.value) {
+            const key = filter.id.replace(".", "");
+            query.set(key, filter.value as string);
+          } else {
+            const key = filter.id.replace(".", "");
+            query.delete(key);
+            setDel(true);
+            if (del) {
+              router.push(`/dashboard/orders?${query.toString()}`);
+            }
+          }
+        });
+        if (sorting.length > 0) {
+          const { id, desc } = sorting[0];
+          if (id) {
+            const sortByKey = id.replace(".", "");
+            query.set("sortBy", sortByKey);
+            query.set("sortOrder", desc ? "desc" : "asc");
+          }
+        } else {
+          query.delete("sortBy");
+          query.delete("sortOrder");
+          setDel(true);
+          if (del) {
+            router.push(`/dashboard/orders?${query.toString()}`);
+          }
+        }
 
+        if (query.toString() !== "") {
+          router.push(`/dashboard/orders?${query.toString()}`);
+        }
+      }, 500);
+
+      return () => clearTimeout(handle);
+    }
+  }, [columnFilter, globalSearch, hasTyped, router, sorting]);
   const columns = useMemo(() => {
     const baseColumns = [
       {
         accessorKey: "menu.name",
         header: "Pizza Name",
       },
+      { accessorKey: "menu.price", header: "Price" },
       {
         accessorKey: "toppings",
         header: "Toppings",
+
         Cell: ({ row }: any) => (
           <Button
-            variant="text" // Use 'text' variant for no background
+            variant="text"
             onClick={() => setDialogData(row.original)}
             sx={{
               color: "orange",
@@ -122,7 +221,7 @@ export default function Orders() {
               fullWidth
               sx={{
                 "& .MuiInputLabel-root": {
-                  textAlign: "right", // Align the label to the right
+                  textAlign: "right",
                   marginRight: "10px",
                 },
               }}
@@ -180,10 +279,22 @@ export default function Orders() {
     }
 
     return baseColumns;
-  }, [hasPermissionToUpdateOrders, status]);
+  }, [hasPermissionToUpdateOrders, status, handleUpdate]);
   const table = useMaterialReactTable({
     columns,
     data: orderData || [],
+    onColumnFiltersChange: (filters) => {
+      setHasTyped(true);
+      setColumnFilter(filters);
+    },
+    onGlobalFilterChange: (filters) => {
+      setHasTyped(true);
+      setGlobalSearch(filters);
+    },
+    onSortingChange: (sorting) => {
+      setHasTyped(true);
+      setSorting(sorting);
+    },
     renderTopToolbarCustomActions: () => (
       <Typography
         sx={{ fontWeight: "bold", fontSize: "15px", marginLeft: "5px" }}
@@ -192,6 +303,15 @@ export default function Orders() {
       </Typography>
     ),
     enablePagination: false,
+    state: {
+      //@ts-ignore
+      columnFilter,
+      sorting,
+      globalSearch,
+      isPending,
+      showAlertBanner: isError,
+      showProgressBars: isPending,
+    },
   });
   return (
     <Box sx={{ width: "100%", height: "100%", overflow: "hidden" }}>

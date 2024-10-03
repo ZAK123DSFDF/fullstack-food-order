@@ -1,6 +1,15 @@
 "use server";
 import { cookies } from "next/headers";
-export const getAllServants = async () => {
+export const getAllServants = async (
+  globalSearch: any,
+  name: any,
+  phoneNumber: any,
+  email: any,
+  location: any,
+  active: any,
+  sortBy: any,
+  sortOrder: any
+) => {
   const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/all`, {
     method: "GET",
     cache: "no-store",

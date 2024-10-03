@@ -1,10 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, IconButton, InputBase, Typography } from "@mui/material";
 import Image from "next/image";
 import {
   Facebook,
   Linkedin,
+  SearchIcon,
   Send,
   Shield,
   Twitter,
@@ -99,7 +100,8 @@ export default function Home({ data }: any) {
             <Typography
               sx={{
                 cursor: "pointer",
-                fontSize: 25,
+                fontSize: { xs: 10, md: 25 },
+                display: { xs: "none", lg: "flex" },
                 fontWeight: "bold",
                 color: "#ff8609",
               }}
@@ -107,13 +109,23 @@ export default function Home({ data }: any) {
               Home
             </Typography>
             <Typography
-              sx={{ cursor: "pointer", fontSize: 25, fontWeight: "regular" }}
+              sx={{
+                cursor: "pointer",
+                fontSize: { xs: 10, md: 25 },
+
+                fontWeight: "regular",
+              }}
               onClick={handleNavigation}
             >
               Orders
             </Typography>
             <Typography
-              sx={{ cursor: "pointer", fontSize: 25, fontWeight: "regular" }}
+              sx={{
+                cursor: "pointer",
+                fontSize: { xs: 10, md: 25 },
+                display: { xs: "none", lg: "flex" },
+                fontWeight: "regular",
+              }}
             >
               Who we are
             </Typography>
@@ -125,7 +137,8 @@ export default function Home({ data }: any) {
               backgroundColor: "#ff890f",
               color: "white",
               fontWeight: "bold",
-              fontSize: "1rem",
+              fontSize: { xs: 10, md: 25 },
+              display: { xs: "none", lg: "flex" },
               padding: "10px 20px",
               borderRadius: "5px",
               "&:hover": {
@@ -187,6 +200,42 @@ export default function Home({ data }: any) {
                 Vestibulum rutrum, risus vel tempus lobortis, augue quam
                 condimentum eros, ac congue.
               </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  width: { xs: 150, sm: 250, md: 300, lg: 300 },
+                  backgroundColor: "white",
+                  borderRadius: "25px",
+                  padding: "5px 10px",
+                  boxShadow: "0px 3px 6px rgba(0,0,0,0.1)",
+                }}
+              >
+                <InputBase
+                  sx={{
+                    ml: 1,
+                    flex: 1,
+                    fontSize: "1rem",
+                  }}
+                  placeholder="Search..."
+                  inputProps={{ "aria-label": "search" }}
+                />
+                <IconButton
+                  type="submit"
+                  sx={{
+                    padding: "10px",
+                    backgroundColor: "#ff8609",
+                    borderRadius: "50%",
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "#e57b0f",
+                    },
+                  }}
+                  aria-label="search"
+                >
+                  <SearchIcon />
+                </IconButton>
+              </Box>
             </Box>
           </Box>
           <Image
@@ -487,7 +536,7 @@ export default function Home({ data }: any) {
             display: "flex",
             gap: { lg: 2 },
             flexDirection: { xs: "column", lg: "row" },
-            whiteSpace: "nowrap",
+            flexWrap: "wrap",
           }}
         >
           <Typography sx={{ color: "white" }}>
@@ -497,7 +546,7 @@ export default function Home({ data }: any) {
         </Box>
         <Box
           sx={{
-            display: "flex",
+            display: { xs: "column", md: "row" },
             gap: 5,
             justifyContent: "center",
             alignItems: "center",

@@ -199,16 +199,75 @@ export class RoleService {
       throw error;
     }
   }
-  async getAllRoles(restaurantId: number): Promise<any> {
+  async getAllRoles(
+    restaurantId: number,
+    globalSearch?: string,
+    name?: string,
+    createdAt?: string,
+    active?: string,
+    sortBy?: string,
+    sortOrder: 'asc' | 'desc' = 'asc',
+  ): Promise<any> {
     try {
       const restaurant = await this.prisma.restaurant.findUnique({
         where: { id: restaurantId },
       });
+
       if (!restaurant) {
         throw new NotFoundException('Restaurant not found');
       }
+
+      const filters: any = {
+        restaurantId,
+      };
+
+      if (globalSearch) {
+        const isDate = !isNaN(Date.parse(globalSearch));
+
+        filters.OR = [
+          {
+            name: {
+              contains: globalSearch,
+              mode: 'insensitive',
+            },
+          },
+        ];
+
+        if (isDate) {
+          filters.OR.push({
+            createdAt: {
+              equals: new Date(globalSearch),
+            },
+          });
+        }
+      } else {
+        if (name) {
+          filters.name = {
+            contains: name,
+            mode: 'insensitive',
+          };
+        }
+
+        if (createdAt) {
+          filters.createdAt = {
+            gte: new Date(createdAt),
+          };
+        }
+
+        if (active !== undefined) {
+          filters.active = active === 'true';
+        }
+      }
+      const orderBy = {};
+      if (sortBy) {
+        orderBy[sortBy] = sortOrder;
+      } else {
+        orderBy['name'] = 'asc';
+      }
+
       const roles = await this.prisma.servantRole.findMany({
-        where: { restaurantId },
+        where: filters,
+        orderBy: orderBy,
       });
 
       return roles;
@@ -217,6 +276,7 @@ export class RoleService {
       throw error;
     }
   }
+
   async getAllActiveRoles(restaurantId: number): Promise<any> {
     try {
       const restaurant = await this.prisma.restaurant.findUnique({

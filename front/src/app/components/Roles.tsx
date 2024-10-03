@@ -16,12 +16,19 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import {
   MaterialReactTable,
+  MRT_ColumnFiltersState,
+  MRT_SortingState,
   useMaterialReactTable,
 } from "material-react-table";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
 import BreadCrumbs from "./BreadCrumbs";
-import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { getAllRoles } from "../actions/role/getAllRoles";
 import { createRole } from "../actions/role/createRole";
 import DialogCom from "./Dialog";
@@ -31,13 +38,20 @@ import { activateRole } from "../actions/role/activateRole";
 import { deactivateRole } from "../actions/role/deactivateRole";
 import { deleteRole } from "../actions/role/deleteRole";
 import useLocalStorage from "@/utils/useLocalStorage";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function RoleManagement() {
   const [dialogData, setDialogData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [roleId, setRoleId] = useState(null);
-
+  const searchParams = useSearchParams();
+  const [hasTyped, setHasTyped] = useState(false);
+  const [globalSearch, setGlobalSearch] = useState("");
+  const [columnFilter, setColumnFilter] = useState<MRT_ColumnFiltersState>([]);
+  const [sorting, setSorting] = useState<MRT_SortingState>([]);
+  const [del, setDel] = useState(false);
+  const router = useRouter();
   const [newRole, setNewRole] = useState({
     roleName: "",
     permissions: {
@@ -54,14 +68,32 @@ export default function RoleManagement() {
       GET_USERS: false,
     },
   });
-
-  const queryClient = new QueryClient();
+  const globalSearc = searchParams.get("globalSearch");
+  const roleName = searchParams.get("name");
+  const createdAt = searchParams.get("createdAt");
+  const active = searchParams.get("active");
+  const sortBy = searchParams.get("sortBy");
+  const sortOrder = searchParams.get("sortOrder");
+  const queryClient = useQueryClient();
+  const { data, isPending, isError } = useQuery({
+    queryKey: [
+      "allRoles",
+      globalSearc,
+      roleName,
+      createdAt,
+      active,
+      sortBy,
+      sortOrder,
+    ],
+    queryFn: () =>
+      getAllRoles(globalSearc, roleName, createdAt, active, sortBy, sortOrder),
+  });
   const { mutate } = useMutation({
     mutationFn: createRole,
     onSuccess: (data) => {
       console.log(data);
       //@ts-ignore
-      queryClient.invalidateQueries["allRoles"];
+      queryClient.invalidateQueries(["allRoles"]);
     },
   });
   const handleAddNewRole = () => {
@@ -85,11 +117,8 @@ export default function RoleManagement() {
     mutate({ name: newRole.roleName, allowedActions: selectedPermissions });
     setOpenAddDialog(false);
   };
-  const { data } = useQuery({
-    queryKey: ["allRoles"],
-    queryFn: () => getAllRoles(),
-  });
-  const { data: data1, isPending } = useQuery({
+
+  const { data: data1 } = useQuery({
     queryKey: ["getSingleRole"],
     queryFn: () => getSingleRole(roleId),
     enabled: !!roleId,
@@ -98,8 +127,9 @@ export default function RoleManagement() {
     mutationFn: updateRole,
     onSuccess: (data) => {
       console.log(data);
+      setIsEditing(false);
       //@ts-ignore
-      queryClient.invalidateQueries["allRoles"];
+      queryClient.invalidateQueries(["allRoles"]);
     },
   });
   const { mutate: activate } = useMutation({
@@ -107,7 +137,7 @@ export default function RoleManagement() {
     onSuccess: (data) => {
       console.log(data);
       //@ts-ignore
-      queryClient.invalidateQueries["allRoles"];
+      queryClient.invalidateQueries(["allRoles"]);
     },
   });
   const { mutate: deactivate } = useMutation({
@@ -115,7 +145,7 @@ export default function RoleManagement() {
     onSuccess: (data) => {
       console.log(data);
       //@ts-ignore
-      queryClient.invalidateQueries["allRoles"];
+      queryClient.invalidateQueries(["allRoles"]);
     },
   });
   const { mutate: deleteId } = useMutation({
@@ -123,7 +153,7 @@ export default function RoleManagement() {
     onSuccess: (data) => {
       console.log(data);
       //@ts-ignore
-      queryClient.invalidateQueries["allRoles"];
+      queryClient.invalidateQueries(["allRoles"]);
     },
   });
   const handleDelete = (id: any) => {
@@ -160,7 +190,6 @@ export default function RoleManagement() {
       allowedActions: selectedPermissions,
       id,
     });
-    setIsEditing(false);
   };
   useEffect(() => {
     console.log(data1);
@@ -171,7 +200,6 @@ export default function RoleManagement() {
     hasPermissionToGetRoles,
     hasPermissionToUpdateRole,
   } = useLocalStorage();
-
   const columns = useMemo(
     () => [
       {
@@ -216,8 +244,10 @@ export default function RoleManagement() {
             <IconButton
               onClick={() => {
                 setDialogData(row.original);
-                setIsEditing(true);
                 setRoleId(row.original.id);
+                setTimeout(() => {
+                  setIsEditing(true);
+                }, 700);
               }}
               disabled={!hasPermissionToUpdateRole}
             >
@@ -235,10 +265,71 @@ export default function RoleManagement() {
     ],
     [hasPermissionToUpdateRole, hasPermissionToDeleteRole]
   );
+  useEffect(() => {
+    if (hasTyped) {
+      const handle = setTimeout(() => {
+        const query = new URLSearchParams();
+        if (globalSearch) {
+          query.set("globalSearch", globalSearch);
+        } else {
+          query.delete("globalSearch");
+          setDel(true);
+          if (del) {
+            router.push(`/dashboard/roles?${query.toString()}`);
+          }
+        }
+        columnFilter.forEach((filter) => {
+          if (filter.value) {
+            const key = filter.id.replace(".", "");
+            query.set(key, filter.value as string);
+          } else {
+            const key = filter.id.replace(".", "");
+            query.delete(key);
+            setDel(true);
+            if (del) {
+              router.push(`/dashboard/roles?${query.toString()}`);
+            }
+          }
+        });
+        if (sorting.length > 0) {
+          const { id, desc } = sorting[0];
+          if (id) {
+            const sortByKey = id.replace(".", "");
+            query.set("sortBy", sortByKey);
+            query.set("sortOrder", desc ? "desc" : "asc");
+          }
+        } else {
+          query.delete("sortBy");
+          query.delete("sortOrder");
+          setDel(true);
+          if (del) {
+            router.push(`/dashboard/roles?${query.toString()}`);
+          }
+        }
 
+        if (query.toString() !== "") {
+          router.push(`/dashboard/roles?${query.toString()}`);
+        }
+      }, 500);
+
+      return () => clearTimeout(handle);
+    }
+  }, [columnFilter, globalSearch, hasTyped, router, sorting]);
   const table = useMaterialReactTable({
     columns,
     data: data || [],
+    onColumnFiltersChange: (filters) => {
+      setHasTyped(true);
+      setColumnFilter(filters);
+    },
+    onGlobalFilterChange: (filters) => {
+      setHasTyped(true);
+      setGlobalSearch(filters);
+    },
+    onSortingChange: (sorting) => {
+      setHasTyped(true);
+      setSorting(sorting);
+    },
     renderTopToolbarCustomActions: () => (
       <Button
         onClick={() => setOpenAddDialog(true)}
@@ -249,6 +340,15 @@ export default function RoleManagement() {
         Add New Role
       </Button>
     ),
+    state: {
+      //@ts-ignore
+      columnFilter,
+      sorting,
+      globalSearch,
+      isPending,
+      showAlertBanner: isError,
+      showProgressBars: isPending,
+    },
   });
 
   return (

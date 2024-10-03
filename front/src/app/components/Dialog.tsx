@@ -10,7 +10,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 export default function DialogCom({
   newRole,
   setNewRole,
@@ -25,7 +25,7 @@ export default function DialogCom({
   isPending,
   handleEditData,
 }: any) {
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isEditing && data1) {
       // Populate form with existing role data for editing
       const updatedPermissions = {

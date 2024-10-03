@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
   Response,
   UseGuards,
@@ -21,6 +22,7 @@ import { Orders } from 'src/classes/Orders';
 import { AllowedActions } from 'src/utils/enum';
 import { JwtService } from '@nestjs/jwt';
 import { OrderHistory } from 'src/classes/OrderHistory';
+import { orderStatus } from '@prisma/client';
 
 @Controller('order')
 export class OrderController {
@@ -92,14 +94,39 @@ export class OrderController {
       ability.can(AllowedActions.ALL, All) ||
       ability.can(AllowedActions.SEE_ORDERS, Orders),
   )
-  async getOrdersByRestaurant(@Request() req, @Response() res) {
+  async getOrdersByRestaurant(
+    @Request() req,
+    @Response() res,
+    @Query('globalSearch') globalSearch?: string, // Parameter for global search
+    @Query('orderStatus') orderStatus?: string,
+    @Query('menuName') menuName?: string,
+    @Query('count') count?: any, // Changed to any to handle type conversion in the service
+    @Query('price') price?: any, // Changed to any to handle type conversion in the service
+    @Query('customerName') customerName?: string,
+    @Query('customerEmail') customerEmail?: string,
+    @Query('customerPhoneNumber') customerPhoneNumber?: string,
+    @Query('customerLocation') customerLocation?: string,
+  ) {
     try {
       const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
-      const orders =
-        await this.orderService.getOrdersByRestaurantId(restaurantId);
-      res.status(200).json(orders);
+      const orders = await this.orderService.getOrdersByRestaurantId(
+        restaurantId,
+        globalSearch,
+        orderStatus,
+        menuName,
+        count,
+        price,
+        customerName,
+        customerEmail,
+        customerPhoneNumber,
+        customerLocation,
+      );
+      return res.status(200).json(orders);
     } catch (error) {
-      throw error;
+      console.error(error);
+      return res
+        .status(error.status || 500)
+        .json({ message: error.message || 'Internal Server Error' });
     }
   }
 }

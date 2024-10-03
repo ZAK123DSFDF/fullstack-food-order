@@ -18,12 +18,19 @@ import {
 import { useContext, useEffect, useMemo, useState } from "react";
 import {
   MaterialReactTable,
+  MRT_ColumnFiltersState,
+  MRT_SortingState,
   useMaterialReactTable,
 } from "material-react-table";
 import DeleteIcon from "@mui/icons-material/Delete";
 import BreadCrumbs from "./BreadCrumbs";
 import { useForm, Controller } from "react-hook-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { getAllServants } from "../actions/user/getAllServants";
 import { activateServant } from "../actions/user/activateServant";
 import { deactivateServant } from "../actions/user/deactivateServant";
@@ -31,11 +38,18 @@ import { deleteServant } from "../actions/user/deleteServant";
 import { getAllActiveRoles } from "../actions/role/getAllActiveRoles";
 import { createServant } from "../actions/user/createServant";
 import useLocalStorage from "@/utils/useLocalStorage";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Users() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [userData, setUserData] = useState(null);
-
+  const searchParams = useSearchParams();
+  const [hasTyped, setHasTyped] = useState(false);
+  const [globalSearch, setGlobalSearch] = useState("");
+  const [columnFilter, setColumnFilter] = useState<MRT_ColumnFiltersState>([]);
+  const [sorting, setSorting] = useState<MRT_SortingState>([]);
+  const [del, setDel] = useState(false);
+  const router = useRouter();
   const {
     handleSubmit,
     control,
@@ -60,9 +74,39 @@ export default function Users() {
     setDialogOpen(false);
     reset();
   };
-  const { data } = useQuery({
-    queryKey: ["allServants"],
-    queryFn: () => getAllServants(),
+  const queryClient = useQueryClient();
+
+  const globalSearc = searchParams.get("globalSearch");
+  const name = searchParams.get("name");
+  const phoneNumber = searchParams.get("phoneNumber");
+  const email = searchParams.get("email");
+  const location = searchParams.get("location");
+  const actions = searchParams.get("actions");
+  const sortBy = searchParams.get("sortBy");
+  const sortOrder = searchParams.get("sortOrder");
+  const { data, isPending, isError } = useQuery({
+    queryKey: [
+      "allServants",
+      globalSearc,
+      name,
+      phoneNumber,
+      email,
+      location,
+      actions,
+      sortBy,
+      sortOrder,
+    ],
+    queryFn: () =>
+      getAllServants(
+        globalSearc,
+        name,
+        phoneNumber,
+        email,
+        location,
+        actions,
+        sortBy,
+        sortOrder
+      ),
   });
   useEffect(() => {
     console.log(data);
@@ -71,12 +115,17 @@ export default function Users() {
     mutationFn: createServant,
     onSuccess: (data) => {
       console.log(data);
+      handleDialogClose();
+      //@ts-ignore
+      queryClient.invalidateQueries(["allServants"]);
     },
   });
   const { mutate: activate } = useMutation({
     mutationFn: activateServant,
     onSuccess: (data) => {
       console.log(data);
+      //@ts-ignore
+      queryClient.invalidateQueries(["allServants"]);
     },
   });
   const { data: data1 } = useQuery({
@@ -91,12 +140,16 @@ export default function Users() {
     mutationFn: deactivateServant,
     onSuccess: (data) => {
       console.log(data);
+      //@ts-ignore
+      queryClient.invalidateQueries(["allServants"]);
     },
   });
   const { mutate: deleteServant1 } = useMutation({
     mutationFn: deleteServant,
     onSuccess: (data) => {
       console.log(data);
+      //@ts-ignore
+      queryClient.invalidateQueries(["allServants"]);
     },
   });
   const onSubmit = (data: any) => {
@@ -147,6 +200,7 @@ export default function Users() {
       {
         accessorKey: "actions",
         header: "Actions",
+        enableSorting: false,
         Cell: ({ row }: any) => (
           <Box display="flex" alignItems="center">
             <Box
@@ -191,11 +245,73 @@ export default function Users() {
     ],
     [hasPermissionToDeleteUser, hasPermissionToUpdateUser]
   );
+  useEffect(() => {
+    if (hasTyped) {
+      const handle = setTimeout(() => {
+        const query = new URLSearchParams();
+        if (globalSearch) {
+          query.set("globalSearch", globalSearch);
+        } else {
+          query.delete("globalSearch");
+          setDel(true);
+          if (del) {
+            router.push(`/dashboard/users?${query.toString()}`);
+          }
+        }
+        columnFilter.forEach((filter) => {
+          if (filter.value) {
+            const key = filter.id.replace(".", "");
+            query.set(key, filter.value as string);
+          } else {
+            const key = filter.id.replace(".", "");
+            query.delete(key);
+            setDel(true);
+            if (del) {
+              router.push(`/dashboard/users?${query.toString()}`);
+            }
+          }
+        });
+        if (sorting.length > 0) {
+          const { id, desc } = sorting[0];
+          if (id) {
+            const sortByKey = id.replace(".", "");
+            query.set("sortBy", sortByKey);
+            query.set("sortOrder", desc ? "desc" : "asc");
+          }
+        } else {
+          query.delete("sortBy");
+          query.delete("sortOrder");
+          setDel(true);
+          if (del) {
+            router.push(`/dashboard/users?${query.toString()}`);
+          }
+        }
 
+        if (query.toString() !== "") {
+          router.push(`/dashboard/users?${query.toString()}`);
+        }
+      }, 500);
+
+      return () => clearTimeout(handle);
+    }
+  }, [columnFilter, globalSearch, hasTyped, router, sorting]);
   const table = useMaterialReactTable({
     columns,
     data: data || [],
-
+    manualFiltering: true,
+    manualSorting: true,
+    onColumnFiltersChange: (filters) => {
+      setHasTyped(true);
+      setColumnFilter(filters);
+    },
+    onGlobalFilterChange: (filters) => {
+      setHasTyped(true);
+      setGlobalSearch(filters);
+    },
+    onSortingChange: (sorting) => {
+      setHasTyped(true);
+      setSorting(sorting);
+    },
     renderTopToolbarCustomActions: () => (
       <Box sx={{ padding: 2, textAlign: "center" }}>
         <Button
@@ -212,6 +328,15 @@ export default function Users() {
         </Button>
       </Box>
     ),
+    state: {
+      //@ts-ignore
+      columnFilter,
+      sorting,
+      globalSearch,
+      isPending,
+      showAlertBanner: isError,
+      showProgressBars: isPending,
+    },
   });
 
   const watchPassword = watch("password");
@@ -223,7 +348,7 @@ export default function Users() {
         sx={{
           width: "100%",
           height: "100%",
-          backgroundColor: "lightblue",
+          backgroundColor: "#f8f8f8",
           padding: 2,
         }}
       >

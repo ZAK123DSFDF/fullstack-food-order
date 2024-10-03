@@ -17,5 +17,8 @@ export const getLogout = async () => {
     throw new Error(errorData.message || "failed to logout");
   }
   const logoutData = await response.json();
+  if (logoutData) {
+    cookies().delete("token");
+  }
   return logoutData;
 };
