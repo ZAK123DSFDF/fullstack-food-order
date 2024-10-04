@@ -107,6 +107,7 @@ export default function MenuDetail({ data: data2 }: any) {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
+              marginTop: { md: 4 },
             }}
           >
             <Image
@@ -125,9 +126,10 @@ export default function MenuDetail({ data: data2 }: any) {
               gap: 2,
               justifyContent: "flex-start",
               alignItems: "flex-start",
-              overflowY: { xs: "auto", md: "auto" },
-              height: { xs: "auto", md: "500px" },
+              overflowY: { xs: "auto", sm: "auto", md: "auto" },
+              height: { xs: "auto", sm: "300px", md: "500px" },
               maxWidth: { xs: "100%", md: "200px" },
+              marginTop: { md: 4 },
             }}
           >
             {data?.Picture.map((img: any, index: any) => (
@@ -219,6 +221,7 @@ export default function MenuDetail({ data: data2 }: any) {
                 backgroundColor: "white",
                 borderRadius: "5px",
                 display: "flex",
+                border: "2px solid #e57b0f",
                 justifyContent: "center",
                 alignItems: "center",
                 cursor: "pointer",
@@ -237,6 +240,7 @@ export default function MenuDetail({ data: data2 }: any) {
                 backgroundColor: "white",
                 borderRadius: "5px",
                 display: "flex",
+                border: "2px solid #e57b0f",
                 justifyContent: "center",
                 alignItems: "center",
                 cursor: "pointer",
@@ -265,15 +269,19 @@ export default function MenuDetail({ data: data2 }: any) {
           <Button
             sx={{
               alignSelf: "flex-start",
-              backgroundColor: "#e57b0f",
-              color: "white",
+              backgroundColor: isPending ? "gray" : "#e57b0f",
+              color: isPending ? "rgba(255, 255, 255, 0.5)" : "white",
               fontWeight: "bold",
               width: "100%",
               fontSize: 30,
+              "&:hover": {
+                backgroundColor: isPending ? "gray" : "#d96b0f",
+              },
             }}
             onClick={handleOrder}
+            disabled={isPending}
           >
-            {isPending ? "ordering" : "order"}
+            {isPending ? "ordering..." : "order"}
           </Button>
         </Box>
       </Box>
@@ -301,6 +309,7 @@ export default function MenuDetail({ data: data2 }: any) {
             width: "100%",
             justifyContent: "flex-start",
             overflow: "auto",
+            marginBottom: 4,
           }}
         >
           <Card mode="menuDetails" id={params.id} data2={data2} />

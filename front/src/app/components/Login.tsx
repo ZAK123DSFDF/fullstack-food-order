@@ -8,7 +8,7 @@ import { getLogin } from "../actions/user/getLogin";
 export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { mutate, isPending } = useMutation({
+  const { mutate, isPending, isError } = useMutation({
     mutationFn: getLogin,
     onSuccess: (data) => {
       console.log(data);
@@ -144,6 +144,11 @@ export default function Signup() {
             >
               {isPending ? "submitting" : "submit"}
             </Button>
+            {isError && (
+              <Typography sx={{ color: "red" }}>
+                credentials not correct
+              </Typography>
+            )}
             <Typography sx={{ alignSelf: "center" }}>
               dont Have an account?{" "}
               <Link

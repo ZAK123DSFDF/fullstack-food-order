@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  DialogContentText,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import BreadCrumbs from "./BreadCrumbs";
@@ -33,12 +34,15 @@ export default function AddMenu() {
   ];
   const [toppings, setToppings] = useState(initialToppings);
   const [newTopping, setNewTopping] = useState("");
+  const [open, setOpen] = useState(false);
   const [menuName, setMenuName] = useState("");
   const [price, setPrice] = useState("");
   const [openToppingDialog, setOpenToppingDialog] = useState(false);
   const [uploadedImages, setUploadedImages] = useState([]);
   const { hasPermissionToAddMenu } = useLocalStorage();
-
+  const handleClose = () => {
+    setOpen(false);
+  };
   const handleToggleTopping = (index: any) => {
     const updatedToppings = toppings.map((topping, i) =>
       i === index ? { ...topping, selected: !topping.selected } : topping
@@ -66,13 +70,14 @@ export default function AddMenu() {
     },
   });
 
-  const { mutate } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: createMenu,
     onSuccess: (data) => {
       setMenuName("");
       setPrice("");
       setUploadedImages([]);
       setToppings(initialToppings);
+      setOpen(true);
     },
   });
 
@@ -112,196 +117,217 @@ export default function AddMenu() {
   };
 
   return (
-    <Box sx={{ width: "100%", height: "100%", overflow: "hidden" }}>
-      <BreadCrumbs />
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          backgroundColor: "#f7f7f7",
-          height: "100%",
-          width: "100%",
-          padding: 2,
-        }}
-      >
-        {/* Red Container */}
+    <>
+      <Box sx={{ width: "100%", height: "100%", overflow: "hidden" }}>
+        <BreadCrumbs />
         <Box
           sx={{
             display: "flex",
-            flexDirection: "column",
-            backgroundColor: "white",
-            width: "100%",
-            maxWidth: "100%",
-            overflow: "auto",
+            justifyContent: "center",
+            backgroundColor: "#f7f7f7",
             height: "100%",
-            padding: "20px",
-            boxSizing: "border-box",
-            borderRadius: 2,
+            width: "100%",
+            padding: 2,
           }}
         >
-          {hasPermissionToAddMenu ? (
-            <>
-              <Typography variant="h4" sx={{ mb: 2, textAlign: "center" }}>
-                Add Menu Item
-              </Typography>
-
-              {/* Menu Form */}
-              <Box component="form" onSubmit={handleUpload}>
-                <TextField
-                  label="Menu Name"
-                  value={menuName}
-                  onChange={(e) => setMenuName(e.target.value)}
-                  variant="outlined"
-                  fullWidth
-                  sx={{ mb: 2, maxWidth: "500px", margin: "0 auto" }}
-                />
-
-                {/* Toppings Section */}
-                <Typography variant="h6" sx={{ mb: 1, textAlign: "center" }}>
-                  Toppings
+          {/* Red Container */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              backgroundColor: "white",
+              width: "100%",
+              maxWidth: "100%",
+              overflow: "auto",
+              height: "100%",
+              padding: "20px",
+              boxSizing: "border-box",
+              borderRadius: 2,
+            }}
+          >
+            {hasPermissionToAddMenu ? (
+              <>
+                <Typography variant="h4" sx={{ mb: 2, textAlign: "center" }}>
+                  Add Menu Item
                 </Typography>
-                {toppings.map((topping, index) => (
-                  <FormControlLabel
-                    key={topping.name}
-                    control={
-                      <Checkbox
-                        checked={topping.selected}
-                        onChange={() => handleToggleTopping(index)}
-                      />
-                    }
-                    label={topping.name}
-                  />
-                ))}
-                <Button
-                  variant="outlined"
-                  onClick={() => setOpenToppingDialog(true)}
-                  sx={{
-                    mb: 2,
-                    maxWidth: "500px",
-                  }}
-                >
-                  Add New Topping
-                </Button>
 
-                {/* Price Input */}
-                <TextField
-                  label="Price"
-                  variant="outlined"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  fullWidth
-                  type="number"
-                  sx={{ mb: 2, maxWidth: "500px", margin: "0 auto" }}
-                />
-
-                {/* Image Upload Section */}
-                <Typography variant="h6" sx={{ mb: 1, textAlign: "center" }}>
-                  Upload Images
-                </Typography>
-                <Box
-                  {...getRootProps()}
-                  sx={{
-                    border: "2px dashed #ccc",
-                    borderRadius: "8px",
-                    padding: "16px",
-                    textAlign: "center",
-                    cursor: "pointer",
-                    mb: 2,
-                    backgroundColor: "#f9f9f9",
-                    position: "relative",
-                    maxWidth: "400px",
-                    margin: "0 auto",
-                  }}
-                >
-                  <input {...getInputProps()} />
-                  <AddIcon fontSize="large" color="action" />
-                  <Typography variant="body2">
-                    Drag and drop images here, or click to upload
-                  </Typography>
-                </Box>
-
-                {/* Display Uploaded Images */}
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-                  {uploadedImages.map((file: any, index: any) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        position: "relative",
-                        width: 100,
-                        height: 100,
-                        backgroundImage: `url(${file.preview})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                        borderRadius: "8px",
-                        overflow: "hidden",
-                      }}
-                    >
-                      <IconButton
-                        onClick={() => handleDeleteImage(index)}
-                        sx={{
-                          position: "absolute",
-                          top: 0,
-                          right: 0,
-                          backgroundColor: "rgba(0, 0, 0, 0.5)",
-                          color: "white",
-                        }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  ))}
-                </Box>
-
-                {/* Add Menu Button */}
-                <Button
-                  variant="contained"
-                  color="primary"
-                  type="submit"
-                  sx={{
-                    mt: 2,
-                    margin: "0 auto",
-                    alignSelf: "center",
-                  }}
-                >
-                  Add Menu
-                </Button>
-              </Box>
-              <Dialog
-                open={openToppingDialog}
-                onClose={() => setOpenToppingDialog(false)}
-                fullWidth
-                maxWidth="sm"
-              >
-                <DialogTitle>Add New Topping</DialogTitle>
-                <DialogContent>
+                {/* Menu Form */}
+                <Box component="form" onSubmit={handleUpload}>
                   <TextField
-                    label="Topping Name"
+                    label="Menu Name"
+                    value={menuName}
+                    onChange={(e) => setMenuName(e.target.value)}
                     variant="outlined"
                     fullWidth
-                    value={newTopping}
-                    onChange={(e) => setNewTopping(e.target.value)}
-                    sx={{ mt: 2 }}
+                    sx={{ mb: 2, maxWidth: "500px", margin: "0 auto" }}
                   />
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={() => setOpenToppingDialog(false)}>
-                    Cancel
-                  </Button>
+
+                  {/* Toppings Section */}
+                  <Typography variant="h6" sx={{ mb: 1, textAlign: "center" }}>
+                    Toppings
+                  </Typography>
+                  {toppings.map((topping, index) => (
+                    <FormControlLabel
+                      key={topping.name}
+                      control={
+                        <Checkbox
+                          checked={topping.selected}
+                          onChange={() => handleToggleTopping(index)}
+                        />
+                      }
+                      label={topping.name}
+                    />
+                  ))}
                   <Button
-                    onClick={handleAddTopping}
+                    variant="outlined"
+                    onClick={() => setOpenToppingDialog(true)}
+                    sx={{
+                      mb: 2,
+                      maxWidth: "500px",
+                    }}
+                  >
+                    Add New Topping
+                  </Button>
+
+                  {/* Price Input */}
+                  <TextField
+                    label="Price"
+                    variant="outlined"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    fullWidth
+                    type="number"
+                    sx={{ mb: 2, maxWidth: "500px", margin: "0 auto" }}
+                  />
+
+                  {/* Image Upload Section */}
+                  <Typography variant="h6" sx={{ mb: 1, textAlign: "center" }}>
+                    Upload Images
+                  </Typography>
+                  <Box
+                    {...getRootProps()}
+                    sx={{
+                      border: "2px dashed #ccc",
+                      borderRadius: "8px",
+                      padding: "16px",
+                      textAlign: "center",
+                      cursor: "pointer",
+                      mb: 2,
+                      backgroundColor: "#f9f9f9",
+                      position: "relative",
+                      maxWidth: "400px",
+                      margin: "0 auto",
+                    }}
+                  >
+                    <input {...getInputProps()} />
+                    <AddIcon fontSize="large" color="action" />
+                    <Typography variant="body2">
+                      Drag and drop images here, or click to upload
+                    </Typography>
+                  </Box>
+
+                  {/* Display Uploaded Images */}
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+                    {uploadedImages.map((file: any, index: any) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          position: "relative",
+                          width: 100,
+                          height: 100,
+                          backgroundImage: `url(${file.preview})`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                          borderRadius: "8px",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <IconButton
+                          onClick={() => handleDeleteImage(index)}
+                          sx={{
+                            position: "absolute",
+                            top: 0,
+                            right: 0,
+                            backgroundColor: "rgba(0, 0, 0, 0.5)",
+                            color: "white",
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
+                    ))}
+                  </Box>
+
+                  {/* Add Menu Button */}
+                  <Button
                     variant="contained"
                     color="primary"
+                    type="submit"
+                    sx={{
+                      mt: 2,
+                      margin: "0 auto",
+                      alignSelf: "center",
+                    }}
+                    disabled={isPending}
                   >
-                    Add Topping
+                    {isPending ? "creatingMenu" : "Add menu"}
                   </Button>
-                </DialogActions>
-              </Dialog>
-            </>
-          ) : (
-            "You don’t have permission to access this"
-          )}
+                </Box>
+                <Dialog
+                  open={openToppingDialog}
+                  onClose={() => setOpenToppingDialog(false)}
+                  fullWidth
+                  maxWidth="sm"
+                >
+                  <DialogTitle>Add New Topping</DialogTitle>
+                  <DialogContent>
+                    <TextField
+                      label="Topping Name"
+                      variant="outlined"
+                      fullWidth
+                      value={newTopping}
+                      onChange={(e) => setNewTopping(e.target.value)}
+                      sx={{ mt: 2 }}
+                    />
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={() => setOpenToppingDialog(false)}>
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleAddTopping}
+                      variant="contained"
+                      color="primary"
+                    >
+                      Add Topping
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </>
+            ) : (
+              "You don’t have permission to access this"
+            )}
+          </Box>
         </Box>
       </Box>
-    </Box>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Menu Created"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            The menu was successfully created!
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} autoFocus>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
