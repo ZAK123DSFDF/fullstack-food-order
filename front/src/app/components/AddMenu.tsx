@@ -21,6 +21,7 @@ import AddIcon from "@mui/icons-material/AddPhotoAlternate";
 import { useMutation } from "@tanstack/react-query";
 import { createMenu } from "../actions/menu/createMenu";
 import useLocalStorage from "@/utils/useLocalStorage";
+import Image from "next/image";
 
 export default function AddMenu() {
   const initialToppings = [
@@ -35,6 +36,7 @@ export default function AddMenu() {
   const [toppings, setToppings] = useState(initialToppings);
   const [newTopping, setNewTopping] = useState("");
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [menuName, setMenuName] = useState("");
   const [price, setPrice] = useState("");
   const [openToppingDialog, setOpenToppingDialog] = useState(false);
@@ -49,7 +51,11 @@ export default function AddMenu() {
     );
     setToppings(updatedToppings);
   };
-
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 500);
+  });
   const handleAddTopping = () => {
     setToppings([...toppings, { name: newTopping, selected: false }]);
     setNewTopping("");
@@ -145,7 +151,7 @@ export default function AddMenu() {
               borderRadius: 2,
             }}
           >
-            {hasPermissionToAddMenu ? (
+            {hasPermissionToAddMenu && !loading ? (
               <>
                 <Typography variant="h4" sx={{ mb: 2, textAlign: "center" }}>
                   Add Menu Item
@@ -304,8 +310,43 @@ export default function AddMenu() {
                   </DialogActions>
                 </Dialog>
               </>
+            ) : loading ? (
+              <Box
+                sx={{
+                  width: "100%",
+                  height: "100vh", // Full viewport height
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  boxSizing: "border-box",
+                  backgroundColor: "white",
+                  borderRadius: "5px",
+                  padding: 2,
+                }}
+              >
+                <Image
+                  width={30}
+                  height={30}
+                  alt="loading"
+                  src="/spinner.svg"
+                />
+              </Box>
             ) : (
-              "You don’t have permission to access this"
+              <Box
+                sx={{
+                  width: "100%",
+                  height: "100vh", // Full viewport height
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  boxSizing: "border-box",
+                  backgroundColor: "white",
+                  borderRadius: "5px",
+                  padding: 2,
+                }}
+              >
+                <Typography>You don't have permission to see this</Typography>
+              </Box>
             )}
           </Box>
         </Box>

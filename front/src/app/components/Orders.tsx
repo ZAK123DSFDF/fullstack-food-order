@@ -27,11 +27,13 @@ import { getRestaurantOrders } from "../actions/order/getRestaurantOrders";
 import { updateOrder } from "../actions/order/updateOrder";
 import useLocalStorage from "@/utils/useLocalStorage";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 
 export default function Orders() {
   const [dialogData, setDialogData] = useState<any>(null);
   const searchParams = useSearchParams();
   const [hasTyped, setHasTyped] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [globalSearch, setGlobalSearch] = useState("");
   const [columnFilter, setColumnFilter] = useState<MRT_ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<MRT_SortingState>([]);
@@ -50,7 +52,11 @@ export default function Orders() {
   const orderStatus = searchParams.get("orderStatus");
   const sortBy = searchParams.get("sortBy");
   const sortOrder = searchParams.get("sortOrder");
-
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 500);
+  });
   const {
     data: data1,
     isPending,
@@ -353,10 +359,52 @@ export default function Orders() {
             },
           }}
         >
-          {hasPermissionToViewOrders ? (
-            <MaterialReactTable table={table} />
+          {hasPermissionToViewOrders && !loading ? (
+            <Box
+              sx={{
+                width: "100%",
+                maxHeight: "100%",
+                overflow: "auto",
+                boxSizing: "border-box",
+                backgroundColor: "white",
+                borderRadius: "5px",
+                padding: 2,
+              }}
+            >
+              <MaterialReactTable table={table} />
+            </Box>
+          ) : loading ? (
+            <Box
+              sx={{
+                width: "100%",
+                height: "100vh", // Full viewport height
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                boxSizing: "border-box",
+                backgroundColor: "white",
+                borderRadius: "5px",
+                padding: 2,
+              }}
+            >
+              <Image width={30} height={30} alt="loading" src="/spinner.svg" />
+            </Box>
           ) : (
-            "you dont have permission"
+            <Box
+              sx={{
+                width: "100%",
+                height: "100vh", // Full viewport height
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                boxSizing: "border-box",
+                backgroundColor: "white",
+                borderRadius: "5px",
+                padding: 2,
+              }}
+            >
+              <Typography>You don't have permission to see this</Typography>
+            </Box>
           )}
         </Box>
         <Dialog

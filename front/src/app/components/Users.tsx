@@ -39,10 +39,12 @@ import { getAllActiveRoles } from "../actions/role/getAllActiveRoles";
 import { createServant } from "../actions/user/createServant";
 import useLocalStorage from "@/utils/useLocalStorage";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 
 export default function Users() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const [hasTyped, setHasTyped] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
@@ -68,7 +70,11 @@ export default function Users() {
       location: "",
     },
   });
-
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 500);
+  }, []);
   const handleDialogOpen = () => setDialogOpen(true);
   const handleDialogClose = () => {
     setDialogOpen(false);
@@ -352,23 +358,57 @@ export default function Users() {
           padding: 2,
         }}
       >
-        <Box
-          sx={{
-            maxWidth: "100%",
-            maxHeight: "calc(100% - 60px)",
-            overflow: "auto",
-            boxSizing: "border-box",
-            backgroundColor: "white",
-            borderRadius: "5px",
-            padding: 2,
-          }}
-        >
-          {hasPermissionToViewUsers ? (
+        {hasPermissionToViewUsers && !loading ? (
+          <Box
+            sx={{
+              maxWidth: "100%",
+              maxHeight: "100%",
+              overflow: "auto",
+              boxSizing: "border-box",
+              backgroundColor: "white",
+              borderRadius: "5px",
+              padding: 2,
+            }}
+          >
             <MaterialReactTable table={table} />
-          ) : (
-            "you dont have permission to see this page"
-          )}
-        </Box>
+          </Box>
+        ) : loading ? (
+          <Box
+            sx={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              overflow: "auto",
+              boxSizing: "border-box",
+              backgroundColor: "white",
+              borderRadius: "5px",
+              padding: 2,
+              minHeight: "100%",
+            }}
+          >
+            <Image width={30} height={30} alt="loading" src="/spinner.svg" />
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              overflow: "auto",
+              boxSizing: "border-box",
+              backgroundColor: "white",
+              borderRadius: "5px",
+              padding: 2,
+              minHeight: "100%",
+            }}
+          >
+            <Typography>you dont have permission to see this</Typography>
+          </Box>
+        )}
       </Box>
 
       {/* Dialog for Adding New User */}
