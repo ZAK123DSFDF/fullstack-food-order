@@ -22,6 +22,7 @@ export default function Card({ id, mode, data: data1, data2 }: any) {
   const { data, isLoading } = useQuery({
     queryKey: ["menus", mode],
     queryFn,
+    refetchOnWindowFocus: false,
   });
 
   const router = useRouter();
@@ -78,8 +79,11 @@ export default function Card({ id, mode, data: data1, data2 }: any) {
                 <Image
                   src={
                     mode === "orderHistory"
-                      ? menu?.menu?.Picture[0]
-                      : menu?.Picture[0]
+                      ? menu?.menu?.Picture[0].replace(
+                          /\.(jpg|jpeg|png)$/i,
+                          ".webp"
+                        )
+                      : menu?.Picture[0].replace(/\.(jpg|jpeg|png)$/i, ".webp")
                   }
                   width={300}
                   loader={({ src }) => {
