@@ -21,7 +21,7 @@ import { AllowedActions } from 'src/utils/enum';
 import { JwtService } from '@nestjs/jwt';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-
+import * as sharp from 'sharp';
 @Controller('menu')
 export class MenuController {
   constructor(
@@ -44,9 +44,20 @@ export class MenuController {
     @UploadedFiles() Files: Express.Multer.File[],
   ) {
     try {
-      const menuPic = [];
+      const menuPic: string[] = [];
+
       for (const file of Files) {
-        const Picture = await this.cloudinaryService.uploadFiles(file);
+        const buffer = await sharp(file.buffer)
+          .resize({ width: 800 })
+          .webp({ quality: 80 })
+          .toBuffer();
+        const updatedFile = {
+          ...file,
+          buffer,
+          mimetype: 'image/webp',
+          originalname: `${file.originalname.split('.')[0]}.webp`,
+        };
+        const Picture = await this.cloudinaryService.uploadFiles(updatedFile);
         menuPic.push(Picture.secure_url);
       }
       const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
@@ -55,6 +66,7 @@ export class MenuController {
         restaurantId,
         menuData,
       );
+
       res.status(200).json(result);
     } catch (error) {
       console.log(error);

@@ -22,7 +22,6 @@ export default function Card({ id, mode, data: data1, data2 }: any) {
   const { data, isLoading } = useQuery({
     queryKey: ["menus", mode],
     queryFn,
-    refetchOnWindowFocus: false,
   });
 
   const router = useRouter();
@@ -79,11 +78,8 @@ export default function Card({ id, mode, data: data1, data2 }: any) {
                 <Image
                   src={
                     mode === "orderHistory"
-                      ? menu?.menu?.Picture[0].replace(
-                          /\.(jpg|jpeg|png)$/i,
-                          ".webp"
-                        )
-                      : menu?.Picture[0].replace(/\.(jpg|jpeg|png)$/i, ".webp")
+                      ? menu?.menu?.Picture[0]
+                      : menu?.Picture[0]
                   }
                   width={300}
                   loader={({ src }) => {
@@ -103,7 +99,15 @@ export default function Card({ id, mode, data: data1, data2 }: any) {
                 <Typography sx={{ fontWeight: "bold", fontSize: 30 }}>
                   {mode === "orderHistory" ? menu?.menu?.name : menu?.name}
                 </Typography>
-                <Typography sx={{ fontWeight: "thin" }}>
+                <Typography
+                  sx={{
+                    fontWeight: "thin",
+                    wordWrap: "break-word",
+                    whiteSpace: "normal",
+                    maxHeight: "50px",
+                    overflowY: "auto",
+                  }}
+                >
                   {mode === "orderHistory"
                     ? menu?.menu?.toppings.join(", ")
                     : menu?.toppings.join(",")}
