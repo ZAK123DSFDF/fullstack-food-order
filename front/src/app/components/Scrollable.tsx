@@ -34,6 +34,7 @@ export default function Scrollable() {
                 return src;
               }}
               src="/man2.jpg"
+              loading="lazy"
               fill
               alt="man"
               style={{ objectFit: "cover" }}

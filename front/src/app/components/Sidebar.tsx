@@ -74,6 +74,7 @@ export default function Sidebar() {
           loader={({ src }) => {
             return src;
           }}
+          loading="lazy"
           src="/pizzalogo.svg"
           width={70}
           height={70}

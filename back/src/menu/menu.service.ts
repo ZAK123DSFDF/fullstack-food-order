@@ -6,7 +6,8 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { z } from 'zod';
-
+import * as sharp from 'sharp';
+import axios from 'axios';
 @Injectable()
 export class MenuService {
   constructor(private prisma: PrismaService) {}
@@ -57,7 +58,6 @@ export class MenuService {
       const menus = await this.prisma.menu.findMany({
         include: { restaurant: true },
       });
-
       return menus;
     } catch (error) {
       console.error(error);

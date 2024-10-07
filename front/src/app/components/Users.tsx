@@ -388,7 +388,16 @@ export default function Users() {
               minHeight: "100%",
             }}
           >
-            <Image width={30} height={30} alt="loading" src="/spinner.svg" />
+            <Image
+              loader={({ src }) => {
+                return src;
+              }}
+              loading="lazy"
+              width={30}
+              height={30}
+              alt="loading"
+              src="/spinner.svg"
+            />
           </Box>
         ) : (
           <Box

@@ -253,6 +253,7 @@ export default function Home({ data }: any) {
               return src;
             }}
             src="/pizza.svg"
+            loading="lazy"
             alt="pizza"
             width={900}
             height={900}
@@ -441,6 +442,7 @@ export default function Home({ data }: any) {
               return src;
             }}
             src="/pizzalogo.svg"
+            loading="lazy"
             width={40}
             height={40}
             alt="pizza"

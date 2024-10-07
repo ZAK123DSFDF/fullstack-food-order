@@ -115,6 +115,7 @@ export default function MenuDetail({ data: data2 }: any) {
                 return src;
               }}
               src={selectedImage}
+              loading="lazy"
               alt="Selected"
               fill
               style={{ objectFit: "cover" }}
@@ -158,6 +159,7 @@ export default function MenuDetail({ data: data2 }: any) {
                     return src;
                   }}
                   alt={`Thumbnail ${index + 1}`}
+                  loading="lazy"
                   width={80}
                   height={80}
                   style={{ objectFit: "cover", width: "100%", height: "100%" }}

@@ -413,6 +413,7 @@ export default function RoleManagement() {
                   return src;
                 }}
                 width={30}
+                loading="lazy"
                 height={30}
                 alt="loading"
                 src="/spinner.svg"

@@ -37,6 +37,7 @@ export default function OrderHistory() {
               return src;
             }}
             src="/pizzalogo.svg"
+            loading="lazy"
             width={30}
             height={30}
             alt="pizza"

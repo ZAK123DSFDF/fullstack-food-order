@@ -391,6 +391,7 @@ export default function Orders() {
                 loader={({ src }) => {
                   return src;
                 }}
+                loading="lazy"
                 width={30}
                 height={30}
                 alt="loading"

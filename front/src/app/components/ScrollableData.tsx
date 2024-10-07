@@ -83,6 +83,7 @@ export default function ScrollableData({ color }: any) {
           loader={({ src }) => {
             return src;
           }}
+          loading="lazy"
           width={300}
           height={300}
           alt="this is feature"
