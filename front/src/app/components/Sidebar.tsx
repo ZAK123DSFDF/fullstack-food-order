@@ -70,7 +70,15 @@ export default function Sidebar() {
           backgroundColor: "#fff8f2",
         }}
       >
-        <Image src="/pizzalogo.svg" width={70} height={70} alt="pizza" />
+        <Image
+          loader={({ src }) => {
+            return src;
+          }}
+          src="/pizzalogo.svg"
+          width={70}
+          height={70}
+          alt="pizza"
+        />
       </Box>
       <Box
         sx={{

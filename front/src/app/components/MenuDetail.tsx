@@ -111,6 +111,9 @@ export default function MenuDetail({ data: data2 }: any) {
             }}
           >
             <Image
+              loader={({ src }) => {
+                return src;
+              }}
               src={selectedImage}
               alt="Selected"
               fill
@@ -151,6 +154,9 @@ export default function MenuDetail({ data: data2 }: any) {
               >
                 <Image
                   src={img}
+                  loader={({ src }) => {
+                    return src;
+                  }}
                   alt={`Thumbnail ${index + 1}`}
                   width={80}
                   height={80}

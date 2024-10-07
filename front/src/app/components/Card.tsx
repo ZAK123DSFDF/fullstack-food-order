@@ -71,6 +71,9 @@ export default function Card({ id, mode, data: data1, data2 }: any) {
                     ? menu?.menu?.Picture[0]
                     : menu?.Picture[0]
                 }
+                loader={({ src }) => {
+                  return src;
+                }}
                 width={300}
                 height={300}
                 alt="card"
@@ -163,6 +166,9 @@ export default function Card({ id, mode, data: data1, data2 }: any) {
                   }}
                 >
                   <Image
+                    loader={({ src }) => {
+                      return src;
+                    }}
                     src="/man2.jpg"
                     fill
                     alt="man"

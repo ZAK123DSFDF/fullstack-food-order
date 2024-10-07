@@ -30,6 +30,9 @@ export default function Scrollable() {
             }}
           >
             <Image
+              loader={({ src }) => {
+                return src;
+              }}
               src="/man2.jpg"
               fill
               alt="man"

@@ -325,6 +325,9 @@ export default function AddMenu() {
                 }}
               >
                 <Image
+                  loader={({ src }) => {
+                    return src;
+                  }}
                   width={30}
                   height={30}
                   alt="loading"

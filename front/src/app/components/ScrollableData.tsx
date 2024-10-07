@@ -80,6 +80,9 @@ export default function ScrollableData({ color }: any) {
           </Button>
         </Box>
         <Image
+          loader={({ src }) => {
+            return src;
+          }}
           width={300}
           height={300}
           alt="this is feature"

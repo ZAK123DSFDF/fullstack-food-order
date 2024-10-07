@@ -85,7 +85,15 @@ export default function Home({ data }: any) {
           }}
         >
           <Box sx={{ display: "flex", gap: 1 }}>
-            <Image src="/pizzalogo.svg" width={30} height={30} alt="pizza" />
+            <Image
+              loader={({ src }) => {
+                return src;
+              }}
+              src="/pizzalogo.svg"
+              width={30}
+              height={30}
+              alt="pizza"
+            />
             <Typography
               sx={{
                 cursor: "pointer",
@@ -241,6 +249,9 @@ export default function Home({ data }: any) {
             </Box>
           </Box>
           <Image
+            loader={({ src }) => {
+              return src;
+            }}
             src="/pizza.svg"
             alt="pizza"
             width={900}
@@ -425,7 +436,15 @@ export default function Home({ data }: any) {
             gap: 2,
           }}
         >
-          <Image src="/pizzalogo.svg" width={40} height={40} alt="pizza" />
+          <Image
+            loader={({ src }) => {
+              return src;
+            }}
+            src="/pizzalogo.svg"
+            width={40}
+            height={40}
+            alt="pizza"
+          />
           <Box
             sx={{
               width: 300,

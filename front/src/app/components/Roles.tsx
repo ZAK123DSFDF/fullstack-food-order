@@ -408,7 +408,15 @@ export default function RoleManagement() {
                 padding: 2,
               }}
             >
-              <Image width={30} height={30} alt="loading" src="/spinner.svg" />
+              <Image
+                loader={({ src }) => {
+                  return src;
+                }}
+                width={30}
+                height={30}
+                alt="loading"
+                src="/spinner.svg"
+              />
             </Box>
           ) : (
             <Box
