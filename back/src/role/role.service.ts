@@ -217,9 +217,7 @@ export class RoleService {
         throw new NotFoundException('Restaurant not found');
       }
 
-      const filters: any = {
-        restaurantId,
-      };
+      const filters: any = { restaurantId };
 
       if (globalSearch) {
         const isDate = !isNaN(Date.parse(globalSearch));
@@ -249,13 +247,20 @@ export class RoleService {
         }
 
         if (createdAt) {
-          filters.createdAt = {
-            gte: new Date(createdAt),
-          };
-        }
+          const date = new Date(createdAt);
+          if (!isNaN(date.getTime())) {
+            const startOfDay = new Date(date.setHours(0, 0, 0, 0));
+            const endOfDay = new Date(date.setHours(23, 59, 59, 999));
 
-        if (active !== undefined) {
-          filters.active = active === 'true';
+            filters.createdAt = {
+              gte: startOfDay,
+              lte: endOfDay,
+            };
+          }
+        }
+        if (active === 'true' || active === 'false') {
+          const isActive = active === 'true';
+          filters.active = isActive;
         }
       }
       const orderBy = {};
@@ -266,10 +271,16 @@ export class RoleService {
       }
 
       const roles = await this.prisma.servantRole.findMany({
-        where: filters,
+        where: {
+          restaurantId: filters.restaurantId,
+          OR: filters.OR,
+          name: filters.name,
+          createdAt: filters.createdAt,
+          active: filters.active,
+        },
         orderBy: orderBy,
       });
-
+      console.log('this is roles', roles);
       return roles;
     } catch (error) {
       console.log(error);

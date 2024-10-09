@@ -260,7 +260,7 @@ export class AuthService {
       if (location) {
         whereCondition.location = { contains: location, mode: 'insensitive' };
       }
-      if (active !== undefined) {
+      if (active === 'true' || active === 'false') {
         whereCondition.active = active === 'true';
       }
       const orderBy = {};
@@ -269,7 +269,7 @@ export class AuthService {
       }
       const servants = await this.prisma.user.findMany({
         where: whereCondition,
-        orderBy: sortBy ? orderBy : undefined,
+        orderBy: orderBy,
       });
 
       return servants;

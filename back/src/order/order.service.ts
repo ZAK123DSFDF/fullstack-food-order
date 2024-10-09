@@ -130,21 +130,24 @@ export class OrderService {
   }
   async getOrdersByRestaurantId(
     restaurantId: number,
-    globalSearch?: string, // Parameter for global search
+    globalSearch?: string,
     orderStatus?: string,
     menuName?: string,
     count?: number,
     price?: number,
+    createdAt?: string,
     customerName?: string,
     customerEmail?: string,
     customerPhoneNumber?: string,
     customerLocation?: string,
+    sortBy?: string,
+    sortOrder?: string,
   ): Promise<any[]> {
     try {
       const restaurantExists = await this.prisma.restaurant.findUnique({
         where: { id: restaurantId },
       });
-      console.log(typeof restaurantId);
+
       if (!restaurantExists) {
         throw new NotFoundException(
           `Restaurant with ID ${restaurantId} not found.`,
@@ -156,130 +159,162 @@ export class OrderService {
           restaurantId: restaurantId,
         },
       };
+
       if (globalSearch) {
         whereClause.OR = [
           {
-            orderStatus: {
-              contains: globalSearch,
-              mode: 'insensitive',
-            },
-          },
-          {
             menu: {
-              name: {
-                contains: globalSearch,
-                mode: 'insensitive',
-              },
+              name: { contains: globalSearch, mode: 'insensitive' },
             },
           },
           {
             customer: {
-              name: {
-                contains: globalSearch,
-                mode: 'insensitive',
-              },
-            },
-          },
-          {
-            customer: {
-              email: {
-                contains: globalSearch,
-                mode: 'insensitive',
-              },
-            },
-          },
-          {
-            customer: {
-              phoneNumber: {
-                contains: globalSearch,
-                mode: 'insensitive',
-              },
-            },
-          },
-          {
-            customer: {
-              location: {
-                contains: globalSearch,
-                mode: 'insensitive',
-              },
+              name: { contains: globalSearch, mode: 'insensitive' },
+              email: { contains: globalSearch, mode: 'insensitive' },
+
+              phoneNumber: { contains: globalSearch, mode: 'insensitive' },
+
+              location: { contains: globalSearch, mode: 'insensitive' },
             },
           },
         ];
+
+        const numericSearch = Number(globalSearch);
+        if (!isNaN(numericSearch)) {
+          whereClause.OR.push(
+            { menu: { price: numericSearch } },
+            { count: numericSearch },
+          );
+        }
+        const isDate = !isNaN(Date.parse(globalSearch));
+        if (isDate) {
+          whereClause.OR.push({
+            createdAt: {
+              equals: new Date(globalSearch),
+            },
+          });
+        }
       }
+
       if (orderStatus) {
-        whereClause.orderStatus = {
-          contains: orderStatus,
+        const validOrder = ['READY', 'PREPARING', 'DELIVERED'];
+        if (validOrder.includes(orderStatus)) {
+          whereClause.orderStatus = orderStatus;
+        }
+      }
+
+      if (menuName) {
+        whereClause.menu.name = {
+          contains: menuName,
           mode: 'insensitive',
         };
       }
-      if (menuName) {
-        whereClause.menu = {
-          name: {
-            contains: menuName,
-            mode: 'insensitive',
-          },
-        };
-      }
-      if (customerName) {
-        whereClause.customer = {
-          name: {
+
+      if (
+        customerName ||
+        customerEmail ||
+        customerPhoneNumber ||
+        customerLocation
+      ) {
+        whereClause.customer = {};
+
+        if (customerName) {
+          whereClause.customer.name = {
             contains: customerName,
             mode: 'insensitive',
-          },
-        };
-      }
-      if (customerEmail) {
-        whereClause.customer = {
-          email: {
+          };
+        }
+
+        if (customerEmail) {
+          whereClause.customer.email = {
             contains: customerEmail,
             mode: 'insensitive',
-          },
-        };
-      }
-      if (customerPhoneNumber) {
-        whereClause.customer = {
-          phoneNumber: {
+          };
+        }
+
+        if (customerPhoneNumber) {
+          whereClause.customer.phoneNumber = {
             contains: customerPhoneNumber,
             mode: 'insensitive',
-          },
-        };
-      }
-      if (customerLocation) {
-        whereClause.customer = {
-          location: {
+          };
+        }
+
+        if (customerLocation) {
+          whereClause.customer.location = {
             contains: customerLocation,
             mode: 'insensitive',
-          },
-        };
+          };
+        }
       }
-      if (count !== undefined && !isNaN(Number(count))) {
-        whereClause.count = {
-          equals: Number(count),
-        };
+
+      if (count && !isNaN(Number(count))) {
+        whereClause.count = Number(count);
       }
-      if (price !== undefined && !isNaN(Number(price))) {
-        whereClause.menu.price = {
-          equals: Number(price),
-        };
+
+      if (price && !isNaN(Number(price))) {
+        whereClause.menu.price = Number(price);
+      }
+      if (createdAt) {
+        const date = new Date(createdAt);
+        if (!isNaN(date.getTime())) {
+          const startOfDay = new Date(date.setHours(0, 0, 0, 0));
+          const endOfDay = new Date(date.setHours(23, 59, 59, 999));
+
+          whereClause.createdAt = {
+            gte: startOfDay,
+            lte: endOfDay,
+          };
+        }
+      }
+      const orderBy: any = {};
+      if (sortBy) {
+        const sortDirection = sortOrder === 'desc' ? 'desc' : 'asc';
+
+        switch (sortBy) {
+          case 'menuname':
+            orderBy.menu = { name: sortDirection };
+            break;
+          case 'menuprice':
+            orderBy.menu = { price: sortDirection };
+            break;
+          case 'count':
+            orderBy.count = sortDirection;
+            break;
+          case 'customerphoneNumber':
+            orderBy.customer = { phoneNumber: sortDirection };
+            break;
+          case 'customername':
+            orderBy.customer = { name: sortDirection };
+            break;
+          case 'customeremail':
+            orderBy.customer = { email: sortDirection };
+            break;
+          case 'customerlocation':
+            orderBy.customer = { location: sortDirection };
+            break;
+          case 'createdAt':
+            orderBy.createdAt = sortDirection;
+            break;
+          default:
+            orderBy.createdAt = 'asc';
+        }
+      } else {
+        orderBy.createdAt = 'asc';
       }
 
       const orders = await this.prisma.order.findMany({
-        where: whereClause,
+        where: { ...whereClause, OR: whereClause.OR },
+        orderBy: orderBy,
         include: {
           menu: true,
           customer: true,
         },
       });
 
-      if (orders.length === 0) {
-        throw new NotFoundException(
-          `No orders found for restaurant with ID ${restaurantId}.`,
-        );
-      }
-
+      console.log('Orders found:', orders);
       return orders;
     } catch (error) {
-      console.log(error);
+      console.error('Error in getOrdersByRestaurantId:', error);
       throw error;
     }
   }

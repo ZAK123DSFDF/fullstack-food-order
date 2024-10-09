@@ -131,9 +131,11 @@ export default function AddMenu() {
             display: "flex",
             justifyContent: "center",
             backgroundColor: "#f7f7f7",
-            height: "100%",
+            height: "calc(100% - 48px)",
             width: "100%",
             padding: 2,
+            overflow: "auto",
+            boxSizing: "border-box",
           }}
         >
           {/* Red Container */}
@@ -143,7 +145,6 @@ export default function AddMenu() {
               flexDirection: "column",
               backgroundColor: "white",
               width: "100%",
-              maxWidth: "100%",
               overflow: "auto",
               height: "100%",
               padding: "20px",
@@ -158,38 +159,69 @@ export default function AddMenu() {
                 </Typography>
 
                 {/* Menu Form */}
-                <Box component="form" onSubmit={handleUpload}>
+                <Box
+                  component="form"
+                  onSubmit={handleUpload}
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
                   <TextField
                     label="Menu Name"
                     value={menuName}
                     onChange={(e) => setMenuName(e.target.value)}
                     variant="outlined"
                     fullWidth
-                    sx={{ mb: 2, maxWidth: "500px", margin: "0 auto" }}
+                    sx={{ mb: 2, maxWidth: "500px" }}
                   />
 
                   {/* Toppings Section */}
                   <Typography variant="h6" sx={{ mb: 1, textAlign: "center" }}>
                     Toppings
                   </Typography>
-                  {toppings.map((topping, index) => (
-                    <FormControlLabel
-                      key={topping.name}
-                      control={
-                        <Checkbox
-                          checked={topping.selected}
-                          onChange={() => handleToggleTopping(index)}
-                        />
-                      }
-                      label={topping.name}
-                    />
-                  ))}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      justifyContent: "center",
+                      mb: 2,
+                      maxWidth: 600,
+                    }}
+                  >
+                    {toppings.map((topping, index) => (
+                      <FormControlLabel
+                        key={topping.name}
+                        control={
+                          <Checkbox
+                            checked={topping.selected}
+                            onChange={() => handleToggleTopping(index)}
+                            sx={{
+                              color: "#e57b0f",
+                              "&.Mui-checked": {
+                                color: "#e57b0f",
+                              },
+                              "&.Mui-checked:hover": {
+                                backgroundColor: "transparent",
+                              },
+                            }}
+                          />
+                        }
+                        label={topping.name}
+                        sx={{ mx: 1 }}
+                      />
+                    ))}
+                  </Box>
+
                   <Button
                     variant="outlined"
                     onClick={() => setOpenToppingDialog(true)}
                     sx={{
                       mb: 2,
                       maxWidth: "500px",
+                      borderColor: "#e57b0f",
+                      color: "#e57b0f",
                     }}
                   >
                     Add New Topping
@@ -203,7 +235,7 @@ export default function AddMenu() {
                     onChange={(e) => setPrice(e.target.value)}
                     fullWidth
                     type="number"
-                    sx={{ mb: 2, maxWidth: "500px", margin: "0 auto" }}
+                    sx={{ mb: 2, maxWidth: "500px" }}
                   />
 
                   {/* Image Upload Section */}
@@ -223,6 +255,7 @@ export default function AddMenu() {
                       position: "relative",
                       maxWidth: "400px",
                       margin: "0 auto",
+                      width: "100%",
                     }}
                   >
                     <input {...getInputProps()} />
@@ -233,7 +266,15 @@ export default function AddMenu() {
                   </Box>
 
                   {/* Display Uploaded Images */}
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 2,
+                      maxWidth: 600,
+                      marginTop: 2,
+                    }}
+                  >
                     {uploadedImages.map((file: any, index: any) => (
                       <Box
                         key={index}
@@ -267,12 +308,12 @@ export default function AddMenu() {
                   {/* Add Menu Button */}
                   <Button
                     variant="contained"
-                    color="primary"
                     type="submit"
                     sx={{
                       mt: 2,
-                      margin: "0 auto",
                       alignSelf: "center",
+                      backgroundColor: "#e57b0f",
+                      color: "white",
                     }}
                     disabled={isPending}
                   >
@@ -297,13 +338,17 @@ export default function AddMenu() {
                     />
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick={() => setOpenToppingDialog(false)}>
+                    <Button
+                      onClick={() => setOpenToppingDialog(false)}
+                      sx={{ color: "#e57b0f" }}
+                    >
                       Cancel
                     </Button>
                     <Button
                       onClick={handleAddTopping}
                       variant="contained"
                       color="primary"
+                      sx={{ backgroundColor: "#e57b0f", color: "white" }}
                     >
                       Add Topping
                     </Button>

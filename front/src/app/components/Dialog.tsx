@@ -118,6 +118,15 @@ export default function DialogCom({
             <Checkbox
               checked={newRole.permissions.SEE_ORDERS}
               name="SEE_ORDERS"
+              sx={{
+                color: "#e57b0f",
+                "&.Mui-checked": {
+                  color: "#e57b0f",
+                },
+                "&.Mui-checked:hover": {
+                  backgroundColor: "transparent",
+                },
+              }}
               onChange={(e) => {
                 const { checked } = e.target;
                 setNewRole((prev: any) => ({
@@ -137,6 +146,15 @@ export default function DialogCom({
             <Checkbox
               checked={newRole.permissions.UPDATE_ORDERS}
               name="UPDATE_ORDERS"
+              sx={{
+                color: "#e57b0f",
+                "&.Mui-checked": {
+                  color: "#e57b0f",
+                },
+                "&.Mui-checked:hover": {
+                  backgroundColor: "transparent",
+                },
+              }}
               onChange={(e) => {
                 const { checked } = e.target;
                 setNewRole((prev: any) => ({
@@ -156,6 +174,15 @@ export default function DialogCom({
             <Checkbox
               checked={newRole.permissions.ADD_MENU}
               name="ADD_MENU"
+              sx={{
+                color: "#e57b0f",
+                "&.Mui-checked": {
+                  color: "#e57b0f",
+                },
+                "&.Mui-checked:hover": {
+                  backgroundColor: "transparent",
+                },
+              }}
               onChange={(e) => {
                 const { checked } = e.target;
                 setNewRole((prev: any) => ({
@@ -175,6 +202,15 @@ export default function DialogCom({
             <Checkbox
               checked={newRole.permissions.ADD_ROLE}
               name="ADD_ROLE"
+              sx={{
+                color: "#e57b0f",
+                "&.Mui-checked": {
+                  color: "#e57b0f",
+                },
+                "&.Mui-checked:hover": {
+                  backgroundColor: "transparent",
+                },
+              }}
               onChange={(e) => {
                 const { checked } = e.target;
                 setNewRole((prev: any) => ({
@@ -194,6 +230,15 @@ export default function DialogCom({
             <Checkbox
               checked={newRole.permissions.UPDATE_ROLE}
               name="UPDATE_ROLE"
+              sx={{
+                color: "#e57b0f",
+                "&.Mui-checked": {
+                  color: "#e57b0f",
+                },
+                "&.Mui-checked:hover": {
+                  backgroundColor: "transparent",
+                },
+              }}
               onChange={(e) => {
                 const { checked } = e.target;
                 setNewRole((prev: any) => ({
@@ -213,6 +258,15 @@ export default function DialogCom({
             <Checkbox
               checked={newRole.permissions.DELETE_ROLE}
               name="DELETE_ROLE"
+              sx={{
+                color: "#e57b0f",
+                "&.Mui-checked": {
+                  color: "#e57b0f",
+                },
+                "&.Mui-checked:hover": {
+                  backgroundColor: "transparent",
+                },
+              }}
               onChange={(e) => {
                 const { checked } = e.target;
                 setNewRole((prev: any) => ({
@@ -232,6 +286,15 @@ export default function DialogCom({
             <Checkbox
               checked={newRole.permissions.GET_ROLES}
               name="GET_ROLES"
+              sx={{
+                color: "#e57b0f",
+                "&.Mui-checked": {
+                  color: "#e57b0f",
+                },
+                "&.Mui-checked:hover": {
+                  backgroundColor: "transparent",
+                },
+              }}
               onChange={(e) => {
                 const { checked } = e.target;
                 setNewRole((prev: any) => ({
@@ -251,6 +314,15 @@ export default function DialogCom({
             <Checkbox
               checked={newRole.permissions.ADD_USER}
               name="ADD_USER"
+              sx={{
+                color: "#e57b0f",
+                "&.Mui-checked": {
+                  color: "#e57b0f",
+                },
+                "&.Mui-checked:hover": {
+                  backgroundColor: "transparent",
+                },
+              }}
               onChange={(e) => {
                 const { checked } = e.target;
                 setNewRole((prev: any) => ({
@@ -270,6 +342,15 @@ export default function DialogCom({
             <Checkbox
               checked={newRole.permissions.UPDATE_USER}
               name="UPDATE_USER"
+              sx={{
+                color: "#e57b0f",
+                "&.Mui-checked": {
+                  color: "#e57b0f",
+                },
+                "&.Mui-checked:hover": {
+                  backgroundColor: "transparent",
+                },
+              }}
               onChange={(e) => {
                 const { checked } = e.target;
                 setNewRole((prev: any) => ({
@@ -289,6 +370,15 @@ export default function DialogCom({
             <Checkbox
               checked={newRole.permissions.DELETE_USER}
               name="DELETE_USER"
+              sx={{
+                color: "#e57b0f",
+                "&.Mui-checked": {
+                  color: "#e57b0f",
+                },
+                "&.Mui-checked:hover": {
+                  backgroundColor: "transparent",
+                },
+              }}
               onChange={(e) => {
                 const { checked } = e.target;
                 setNewRole((prev: any) => ({
@@ -308,6 +398,15 @@ export default function DialogCom({
             <Checkbox
               checked={newRole.permissions.GET_USERS}
               name="GET_USERS"
+              sx={{
+                color: "#e57b0f",
+                "&.Mui-checked": {
+                  color: "#e57b0f",
+                },
+                "&.Mui-checked:hover": {
+                  backgroundColor: "transparent",
+                },
+              }}
               onChange={(e) => {
                 const { checked } = e.target;
                 setNewRole((prev: any) => ({
@@ -346,12 +445,14 @@ export default function DialogCom({
               },
             });
           }}
+          sx={{ color: "#e57b0f" }}
         >
           Cancel
         </Button>
         <Button
           onClick={isEditing ? () => handleEditData(roleId) : handleAddNewRole}
           color="primary"
+          sx={{ backgroundColor: "#e57b0f", color: "white" }}
         >
           {isEditing ? "Edit Role" : "Add Role"}
         </Button>

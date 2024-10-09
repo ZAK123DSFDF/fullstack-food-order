@@ -93,8 +93,18 @@ export default function RoleManagement() {
       sortOrder,
     ],
     queryFn: () =>
-      getAllRoles(globalSearc, roleName, createdAt, active, sortBy, sortOrder),
+      getAllRoles(
+        globalSearc as string,
+        roleName as string,
+        createdAt as string,
+        active as string,
+        sortBy as string,
+        sortOrder as string
+      ),
   });
+  useEffect(() => {
+    console.log("this is roles", data);
+  }, [data]);
   const { mutate } = useMutation({
     mutationFn: createRole,
     onSuccess: (data) => {
@@ -220,6 +230,7 @@ export default function RoleManagement() {
       {
         accessorKey: "active",
         header: "Actions",
+        enableSorting: false,
         Cell: ({ row }: any) => (
           <Box display="flex" alignItems="center">
             <Box
@@ -241,13 +252,31 @@ export default function RoleManagement() {
                   handleToggle(row.original.id, row.original.active)
                 }
                 disabled={!hasPermissionToUpdateRole}
+                sx={{
+                  "& .MuiSwitch-switchBase.Mui-checked": {
+                    color: "#e57b0f",
+                  },
+                  "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                    backgroundColor: "#e57b0f",
+                  },
+                  "& .MuiSwitch-switchBase": {
+                    color: !row.original.active ? "red" : "#e57b0f",
+                  },
+                  "& .MuiSwitch-switchBase + .MuiSwitch-track": {
+                    backgroundColor: !row.original.active ? "red" : "#e57b0f",
+                  },
+                }}
               />
 
-              <Typography sx={{ mr: 2 }}>
+              <Typography
+                sx={{
+                  mr: 2,
+                  color: row.original.active ? "#e57b0f" : "red",
+                }}
+              >
                 {row.original.active ? "Active" : "Inactive"}
               </Typography>
             </Box>
-
             <IconButton
               onClick={() => {
                 setDialogData(row.original);
@@ -324,6 +353,8 @@ export default function RoleManagement() {
   }, [columnFilter, globalSearch, hasTyped, router, sorting]);
   const table = useMaterialReactTable({
     columns,
+    manualFiltering: true,
+    manualSorting: true,
     data: data || [],
     onColumnFiltersChange: (filters) => {
       setHasTyped(true);
@@ -343,6 +374,7 @@ export default function RoleManagement() {
         variant="contained"
         color="primary"
         disabled={!hasPermissionToAddRole}
+        sx={{ backgroundColor: "#e57b0f", color: "white" }}
       >
         Add New Role
       </Button>
@@ -398,7 +430,7 @@ export default function RoleManagement() {
             <Box
               sx={{
                 width: "100%",
-                height: "100vh", // Full viewport height
+                height: "100vh",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",

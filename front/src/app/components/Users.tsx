@@ -230,8 +230,27 @@ export default function Users() {
                   handleClick(row.original.id, row.original.active)
                 }
                 disabled={!hasPermissionToUpdateUser}
+                sx={{
+                  "& .MuiSwitch-switchBase.Mui-checked": {
+                    color: "#e57b0f",
+                  },
+                  "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                    backgroundColor: "#e57b0f",
+                  },
+                  "& .MuiSwitch-switchBase": {
+                    color: !row.original.active ? "red" : "#e57b0f",
+                  },
+                  "& .MuiSwitch-switchBase + .MuiSwitch-track": {
+                    backgroundColor: !row.original.active ? "red" : "#e57b0f",
+                  },
+                }}
               />
-              <Typography sx={{ mr: 2 }}>
+              <Typography
+                sx={{
+                  mr: 2,
+                  color: row.original.active ? "#e57b0f" : "red",
+                }}
+              >
                 {row.original.active ? "Active" : "Inactive"}
               </Typography>
             </Box>
@@ -326,7 +345,8 @@ export default function Users() {
           onClick={handleDialogOpen}
           disabled={!hasPermissionToAddUser}
           sx={{
-            backgroundColor: !hasPermissionToAddUser ? "gray" : "primary.main",
+            backgroundColor: !hasPermissionToAddUser ? "gray" : "#e57b0f",
+            color: !hasPermissionToAddUser ? "#718096" : "white",
             cursor: !hasPermissionToAddUser ? "not-allowed" : "pointer",
           }}
         >
@@ -575,7 +595,11 @@ export default function Users() {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogClose} color="secondary">
+          <Button
+            onClick={handleDialogClose}
+            color="secondary"
+            sx={{ color: "#e57b0f" }}
+          >
             Cancel
           </Button>
           <Button
@@ -583,6 +607,7 @@ export default function Users() {
             form="userForm"
             color="primary"
             variant="contained"
+            sx={{ backgroundColor: "#e57b0f", color: "white" }}
           >
             Add User
           </Button>

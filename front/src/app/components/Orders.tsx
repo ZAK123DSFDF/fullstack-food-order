@@ -44,6 +44,7 @@ export default function Orders() {
   const globalSearc = searchParams.get("globalSearch");
   const menuName = searchParams.get("menuname");
   const menuPrice = searchParams.get("menuprice");
+  const createdAt = searchParams.get("createdAt");
   const count = searchParams.get("count");
   const customerPhoneNumber = searchParams.get("customerphoneNumber");
   const customerName = searchParams.get("customername");
@@ -69,24 +70,33 @@ export default function Orders() {
       menuName,
       count,
       menuPrice,
+      createdAt,
       customerName,
       customerEmail,
       customerPhoneNumber,
       customerLocation,
+      sortBy,
+      sortOrder,
     ],
     queryFn: () =>
       getRestaurantOrders(
-        globalSearc,
-        orderStatus,
-        menuName,
-        count,
-        menuPrice,
-        customerName,
-        customerEmail,
-        customerPhoneNumber,
-        customerLocation
+        globalSearc as string,
+        orderStatus as string,
+        menuName as string,
+        count as string,
+        menuPrice as string,
+        createdAt as string,
+        customerName as string,
+        customerEmail as string,
+        customerPhoneNumber as string,
+        customerLocation as string,
+        sortBy as string,
+        sortOrder as string
       ),
   });
+  useEffect(() => {
+    console.log("this is orders", data1);
+  }, [data1]);
   const [orderData, setOrderData] = useState([]);
   const [status, setStatus] = useState([]);
   const queryClient = useQueryClient();
@@ -172,19 +182,21 @@ export default function Orders() {
       {
         accessorKey: "toppings",
         header: "Toppings",
-
+        enableSorting: false,
         Cell: ({ row }: any) => (
           <Button
             variant="text"
-            onClick={() => setDialogData(row.original)}
             sx={{
-              color: "orange",
+              color: "#e57b0f",
               fontSize: "0.875rem",
               display: "flex",
               alignItems: "center",
             }}
           >
-            <IconButton sx={{ color: "orange" }}>
+            <IconButton
+              sx={{ color: "#e57b0f" }}
+              onClick={() => setDialogData(row.original)}
+            >
               <VisibilityIcon />
             </IconButton>
             Toppings
@@ -220,6 +232,7 @@ export default function Orders() {
       baseColumns.push({
         accessorKey: "orderStatus",
         header: "Order Status",
+        enableSorting: false,
         Cell: ({ row }: any) => {
           const rowIndex = row.index;
           return (
@@ -232,7 +245,7 @@ export default function Orders() {
                 },
               }}
             >
-              <InputLabel shrink>Status</InputLabel>
+              {/* <InputLabel shrink>Status</InputLabel> */}
               {status[rowIndex] !== "DELIVERED" ? (
                 <Select
                   value={status[rowIndex] || row.original.orderStatus}
@@ -257,6 +270,12 @@ export default function Orders() {
                     fontSize: "0.875rem",
                     "& .MuiSelect-select": {
                       padding: "6px",
+                    },
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      border: "none",
+                    },
+                    "& .MuiSvgIcon-root": {
+                      color: "white",
                     },
                   }}
                   displayEmpty
@@ -288,6 +307,8 @@ export default function Orders() {
   }, [hasPermissionToUpdateOrders, status, handleUpdate]);
   const table = useMaterialReactTable({
     columns,
+    manualFiltering: true,
+    manualSorting: true,
     data: orderData || [],
     onColumnFiltersChange: (filters) => {
       setHasTyped(true);
@@ -377,7 +398,7 @@ export default function Orders() {
             <Box
               sx={{
                 width: "100%",
-                height: "100vh", // Full viewport height
+                height: "100vh",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
@@ -402,7 +423,7 @@ export default function Orders() {
             <Box
               sx={{
                 width: "100%",
-                height: "100vh", // Full viewport height
+                height: "100vh",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
@@ -443,6 +464,7 @@ export default function Orders() {
                   onClick={() => setDialogData(null)}
                   variant="outlined"
                   color="primary"
+                  sx={{ borderColor: "#e57b0f", color: "#e57b0f" }}
                 >
                   Close
                 </Button>

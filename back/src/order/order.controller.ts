@@ -97,15 +97,18 @@ export class OrderController {
   async getOrdersByRestaurant(
     @Request() req,
     @Response() res,
-    @Query('globalSearch') globalSearch?: string, // Parameter for global search
+    @Query('globalSearch') globalSearch?: string,
     @Query('orderStatus') orderStatus?: string,
     @Query('menuName') menuName?: string,
-    @Query('count') count?: any, // Changed to any to handle type conversion in the service
-    @Query('price') price?: any, // Changed to any to handle type conversion in the service
+    @Query('count') count?: any,
+    @Query('price') price?: any,
+    @Query('createdAt') createdAt?: string,
     @Query('customerName') customerName?: string,
     @Query('customerEmail') customerEmail?: string,
     @Query('customerPhoneNumber') customerPhoneNumber?: string,
     @Query('customerLocation') customerLocation?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
   ) {
     try {
       const restaurantId = this.jwt.decode(req.cookies['token']).restaurantId;
@@ -116,10 +119,13 @@ export class OrderController {
         menuName,
         count,
         price,
+        createdAt,
         customerName,
         customerEmail,
         customerPhoneNumber,
         customerLocation,
+        sortBy,
+        sortOrder,
       );
       return res.status(200).json(orders);
     } catch (error) {
