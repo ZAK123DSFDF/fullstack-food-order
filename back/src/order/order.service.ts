@@ -169,12 +169,14 @@ export class OrderService {
           },
           {
             customer: {
-              name: { contains: globalSearch, mode: 'insensitive' },
-              email: { contains: globalSearch, mode: 'insensitive' },
-
-              phoneNumber: { contains: globalSearch, mode: 'insensitive' },
-
-              location: { contains: globalSearch, mode: 'insensitive' },
+              OR: [
+                { name: { contains: globalSearch, mode: 'insensitive' } },
+                { email: { contains: globalSearch, mode: 'insensitive' } },
+                {
+                  phoneNumber: { contains: globalSearch, mode: 'insensitive' },
+                },
+                { location: { contains: globalSearch, mode: 'insensitive' } },
+              ],
             },
           },
         ];
